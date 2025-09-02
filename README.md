@@ -1,3 +1,3 @@
 # Creativity Assessment LLM
 
-Sam Grouchnikov, Philip Gregory, Jiho Noh
+Jiho Noh, Sam Grouchnikov, Philip Gregory

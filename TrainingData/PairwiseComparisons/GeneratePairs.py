@@ -14,6 +14,8 @@ uncut_paths = [f"C:\\Users\\samgr\\PycharmProjects\\CreativityLLM\\TrainingData\
 
 cut_paths = [f"C:\\Users\\samgr\\PycharmProjects\\CreativityLLM\\TrainingData\\PairwiseComparisons\\{name}\\{name}PairsCut.csv" for name in datasets]
 
+total_cut_pairs = 0
+total_uncut_pairs = 0
 
 print(len(raw_data))
 for i in range(0, len(raw_data)):
@@ -73,4 +75,9 @@ for i in range(0, len(raw_data)):
     print("Uncut responses: ", len(data_2D))
     print("Cut pairs: ", cutPairs)
     print("Uncut pairs: ", uncutPairs)
+    total_cut_pairs += cutPairs
+    total_uncut_pairs += uncutPairs
     print()
+
+print("Total cut pairs: ", total_cut_pairs)
+print("Total uncut pairs: ", total_uncut_pairs)

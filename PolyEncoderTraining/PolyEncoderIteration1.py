@@ -1,14 +1,23 @@
 import torch
 import torch.nn as nn
-from transformers import BertModel, BertTokenizer
+from torch.utils.data import DataLoader
+from transformers import BertModel, BertTokenizer, DistilBertTokenizer
 import wandb
+
+from PolyEncoderTraining.CustomDataset import PairwiseDataset
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-wandb.init(project='poly-encoder-iteration-1', name='poly-encoder-iteration-1')
+wandb.init(project='poly-encoder-iterations', name='poly-encoder-iteration-1')
+
+# Hyperparameters
+batch_size = 64
+epochs = 3
+learning_rate = 3e-5
+poly_m = 64
 
 class PolyEncoder(nn.Module):
-    def __init__(self, model_name = "bert-base-uncased", code_count = 64):
+    def __init__(self, model_name = "bert-base-uncased", code_count = poly_m):
         super().__init__()
         self.bert = BertModel.from_pretrained(model_name)
         self.poly_codes = nn.Embedding(code_count, self.bert.config.hidden_size)
@@ -87,3 +96,44 @@ class PolyEncoder(nn.Module):
         scores, _ = torch.max(scores, dim=1)
 
         return scores
+
+tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
+model = PolyEncoder().to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+loss_fn = nn.BCELoss()
+
+dataset = PairwiseDataset("file", tokenizer)
+loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+for epoch in range(epochs):
+    model.train()
+    for batch in loader:
+        optimizer.zero_grad()
+
+        ctx_input = batch['ctx_input']
+        ctx_mask = batch['ctx_mask']
+
+        # Candidate 1
+        cand1_input = batch["cand1_input"].to(device)
+        cand1_mask = batch["cand1_mask"].to(device)
+        score1 = batch["score1"].to(device)
+
+        # Candidate 2
+        cand2_input = batch["cand2_input"].to(device)
+        cand2_mask = batch["cand2_mask"].to(device)
+        score2 = batch["score2"].to(device)
+
+        # Forward pass
+        pred1 = model(ctx_input, ctx_mask, cand1_input, cand1_mask)
+        pred2 = model(ctx_input, ctx_mask, cand2_input, cand2_mask)
+
+        # Sigmoid for BCE
+        pred1 = torch.sigmoid(pred1)
+        pred2 = torch.sigmoid(pred2)
+
+        # Loss
+        loss = loss_fn(pred1, pred2)
+        loss2 = loss_fn(pred2, pred1)
+        loss = (loss + loss2) / 2
+
+        loss.backward()
+        optimizer.step()

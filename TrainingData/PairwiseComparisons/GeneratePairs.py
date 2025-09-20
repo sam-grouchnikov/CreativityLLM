@@ -47,7 +47,7 @@ for i in range(0, len(raw_data)):
                 else:
                     try:
                         diff = float(row1[8]) - float(row2[8])
-                        writer.writerow([row1[6], row2[6], diff])
+                        writer.writerow([row1[6], row2[6], row1[8], row2[8]])
                         uncutPairs += 1
                     except (ValueError, IndexError) as e:
                         print(f"Error processing a row: {e}")
@@ -65,7 +65,7 @@ for i in range(0, len(raw_data)):
                 else:
                     try:
                         diff = float(row1[8]) - float(row2[8])
-                        writer.writerow([row1[6], row2[6], diff])
+                        writer.writerow([row1[6], row2[6], row1[8], row2[8]])
                         cutPairs += 1
                     except (ValueError, IndexError) as e:
                         print(f"Error processing a row: {e}")

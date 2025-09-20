@@ -1,6 +1,9 @@
+import math
+
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
+import torch.nn.functional as F
+from torch.utils.data import DataLoader, random_split
 from transformers import BertModel, BertTokenizer, DistilBertTokenizer
 import wandb
 
@@ -80,6 +83,7 @@ class PolyEncoder(nn.Module):
         # Take the first token ([CLS] token) embedding as the candidate vector
         cand_vec = cand_out[:, 0, :]
         # cand_vec: [batch_size, hidden_size]
+        return cand_vec
 
     def forward(self, ctx_input, ctx_mask, cand_input, cand_mask):
         """
@@ -91,26 +95,60 @@ class PolyEncoder(nn.Module):
         ctx_vecs = self.encodeContext(ctx_input, ctx_mask) # [b, m, h]
         cand_vecs = self.encodeCandidate(cand_input, cand_mask) # [b, h]
 
-        scores = torch.bmm(ctx_vecs, cand_vecs.unsqueeze(-1)).squeeze(-1)
+        # [b, m, h] dot [b, h] -> [b, m]
+        attn_scores = torch.bmm(ctx_vecs, cand_vecs.unsqueeze(-1)).squeeze(-1)
+        attn_weights = torch.softmax(attn_scores, dim=-1)  # [b, m]
 
-        scores, _ = torch.max(scores, dim=1)
+        # Weighted sum of poly codes
+        ctx_final = torch.bmm(attn_weights.unsqueeze(1), ctx_vecs).squeeze(1)  # [b, h]
+
+        # Final similarity score
+        scores = torch.sum(ctx_final * cand_vecs, dim=-1)  # [b]
 
         return scores
 
-tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = PolyEncoder().to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-loss_fn = nn.BCELoss()
 
-dataset = PairwiseDataset("file", tokenizer)
-loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+def BCELoss(predict1, predict2, actual1, actual2, eps=1e-8):
+    predictDiff = predict1 - predict2
+    softTarget = actual1 / (actual1 + actual2 + eps)
+    softTarget = softTarget.to(predict1.device).float()
+    loss = -(softTarget * F.logsigmoid(predictDiff) +
+             (1 - softTarget) * F.logsigmoid(-predictDiff))
+    return loss.mean()
+
+# Load full dataset
+path = "C:\\Users\\samgr\\PycharmProjects\\CreativityLLM\\TrainingData\\PairwiseComparisons\\MindReading\\MindReadingPairsCut.csv"
+full_dataset = PairwiseDataset(path, tokenizer)
+
+# Shuffle and compute split lengths
+total_len = len(full_dataset)
+train_len = int(0.7 * total_len)
+val_len   = int(0.1 * total_len)
+test_len  = total_len - train_len - val_len
+
+# Use random_split to split dataset
+train_dataset, val_dataset, test_dataset = random_split(full_dataset, [train_len, val_len, test_len])
+
+# Create DataLoaders
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+val_loader   = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+test_loader  = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+global_step = 0
+
 for epoch in range(epochs):
     model.train()
-    for batch in loader:
+    train_epoch_loss = 0.0
+
+    for batch in train_loader:
+        global_step += 1
         optimizer.zero_grad()
 
-        ctx_input = batch['ctx_input']
-        ctx_mask = batch['ctx_mask']
+        ctx_input = batch['ctx_input'].to(device)
+        ctx_mask = batch['ctx_mask'].to(device)
 
         # Candidate 1
         cand1_input = batch["cand1_input"].to(device)
@@ -126,14 +164,33 @@ for epoch in range(epochs):
         pred1 = model(ctx_input, ctx_mask, cand1_input, cand1_mask)
         pred2 = model(ctx_input, ctx_mask, cand2_input, cand2_mask)
 
-        # Sigmoid for BCE
-        pred1 = torch.sigmoid(pred1)
-        pred2 = torch.sigmoid(pred2)
-
         # Loss
-        loss = loss_fn(pred1, pred2)
-        loss2 = loss_fn(pred2, pred1)
-        loss = (loss + loss2) / 2
-
+        loss = BCELoss(pred1, pred2, score1, score2)
         loss.backward()
         optimizer.step()
+
+        train_epoch_loss += loss.item()
+
+        # Step-level logging
+        wandb.log({"train_step_loss": loss.item()}, step=global_step)
+
+    # Average training loss for the epoch
+    train_epoch_loss /= len(train_loader)
+    wandb.log({"train_epoch_loss": train_epoch_loss}, step=global_step)
+
+    # Validation
+    model.eval()
+    val_loss = 0.0
+    with torch.no_grad():
+        for val_batch in val_loader:
+            pred1 = model(val_batch['ctx_input'].to(device), val_batch['ctx_mask'].to(device),
+                          val_batch['cand1_input'].to(device), val_batch['cand1_mask'].to(device))
+            pred2 = model(val_batch['ctx_input'].to(device), val_batch['ctx_mask'].to(device),
+                          val_batch['cand2_input'].to(device), val_batch['cand2_mask'].to(device))
+            loss = BCELoss(pred1, pred2, val_batch['score1'].to(device), val_batch['score2'].to(device))
+            val_loss += loss.item()
+    val_loss /= len(val_loader)
+    print(f"Epoch {epoch}, train loss: {train_epoch_loss:.4f}, validation loss: {val_loss:.4f}")
+
+    # Epoch-level validation logging
+    wandb.log({"val_loss": val_loss}, step=global_step)

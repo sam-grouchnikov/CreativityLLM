@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, random_split
 from transformers import BertModel, BertTokenizer, DistilBertTokenizer
 import wandb
+import time
 
 from PolyEncoderTraining.CustomDataset import PairwiseDataset
 
@@ -138,12 +139,15 @@ val_loader   = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 test_loader  = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
 global_step = 0
+total_batches = len(train_loader)
 
 for epoch in range(epochs):
     model.train()
     train_epoch_loss = 0.0
+    epoch_start_time = time.time()
 
-    for batch in train_loader:
+    for batch_idx, batch in enumerate(train_loader, start=1):
+        batch_start_time = time.time()
         global_step += 1
         optimizer.zero_grad()
 
@@ -171,11 +175,24 @@ for epoch in range(epochs):
 
         train_epoch_loss += loss.item()
 
-        # Step-level logging
+        # Step-level logging to W&B
         wandb.log({"train_step_loss": loss.item()}, step=global_step)
 
+        # Batch timing
+        batch_time = time.time() - batch_start_time
+        elapsed_time = time.time() - epoch_start_time
+        batches_left = total_batches - batch_idx
+        est_total_time = elapsed_time / batch_idx * total_batches
+        est_remaining = est_total_time - elapsed_time
+
+        print(f"Epoch {epoch+1}/{epochs}, Batch {batch_idx}/{total_batches}, "
+              f"Step Loss: {loss.item():.4f}, "
+              f"Batch Time: {batch_time:.2f}s, "
+              f"Elapsed: {elapsed_time:.2f}s, "
+              f"ETA: {est_remaining:.2f}s")
+
     # Average training loss for the epoch
-    train_epoch_loss /= len(train_loader)
+    train_epoch_loss /= total_batches
     wandb.log({"train_epoch_loss": train_epoch_loss}, step=global_step)
 
     # Validation
@@ -190,7 +207,6 @@ for epoch in range(epochs):
             loss = BCELoss(pred1, pred2, val_batch['score1'].to(device), val_batch['score2'].to(device))
             val_loss += loss.item()
     val_loss /= len(val_loader)
-    print(f"Epoch {epoch}, train loss: {train_epoch_loss:.4f}, validation loss: {val_loss:.4f}")
 
-    # Epoch-level validation logging
+    print(f"Epoch {epoch+1} completed. Train Loss: {train_epoch_loss:.4f}, Validation Loss: {val_loss:.4f}")
     wandb.log({"val_loss": val_loss}, step=global_step)

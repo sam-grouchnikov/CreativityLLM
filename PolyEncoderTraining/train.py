@@ -115,6 +115,7 @@ for epoch in range(epochs):
                           val_batch['cand2_input'].to(device), val_batch['cand2_mask'].to(device))
             loss = BCELoss(pred1, pred2, val_batch['score1'].to(device), val_batch['score2'].to(device))
             val_loss += loss.item()
+
     val_loss /= len(val_loader)
 
     print(f"Epoch {epoch+1} completed. Train Loss: {train_epoch_loss:.4f}, Validation Loss: {val_loss:.4f}")

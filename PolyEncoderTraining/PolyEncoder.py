@@ -65,6 +65,7 @@ class PolyEncoder(nn.Module):
 
         # Take the first token ([CLS] token) embedding as the candidate vector
         cand_vec = cand_out[:, 0, :]
+
         # cand_vec: [batch_size, hidden_size]
         return cand_vec
 

@@ -25,6 +25,7 @@ class PairwiseDataset(Dataset):
 
         cand1_enc = self.tokenizer(cand1, padding="max_length", truncation=True,
                                    max_length=self.max_len, return_tensors="pt")
+
         cand2_enc = self.tokenizer(cand2, padding="max_length", truncation=True,
                                    max_length=self.max_len, return_tensors="pt")
 

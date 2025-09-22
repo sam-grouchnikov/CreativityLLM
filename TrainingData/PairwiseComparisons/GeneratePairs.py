@@ -14,6 +14,8 @@ uncut_paths = [f"C:\\Users\\samgr\\PycharmProjects\\CreativityLLM\\TrainingData\
 
 cut_paths = [f"C:\\Users\\samgr\\PycharmProjects\\CreativityLLM\\TrainingData\\PairwiseComparisons\\{name}\\{name}PairsCut.csv" for name in datasets]
 
+all_cut_path = f"C:\\Users\\samgr\\PycharmProjects\\CreativityLLM\\TrainingData\\PairwiseComparisons\\AllCut.csv"
+
 total_cut_pairs = 0
 total_uncut_pairs = 0
 
@@ -46,8 +48,7 @@ for i in range(0, len(raw_data)):
                     continue
                 else:
                     try:
-                        diff = float(row1[8]) - float(row2[8])
-                        writer.writerow([row1[6], row2[6], row1[8], row2[8]])
+                        writer.writerow([row1[5], row1[6], row1[8], row2[6], row2[8]])
                         uncutPairs += 1
                     except (ValueError, IndexError) as e:
                         print(f"Error processing a row: {e}")
@@ -64,8 +65,21 @@ for i in range(0, len(raw_data)):
                     continue
                 else:
                     try:
-                        diff = float(row1[8]) - float(row2[8])
-                        writer.writerow([row1[6], row2[6], row1[8], row2[8]])
+                        writer.writerow([row1[5], row1[6], row1[8], row2[6], row2[8]])
+                        cutPairs += 1
+                    except (ValueError, IndexError) as e:
+                        print(f"Error processing a row: {e}")
+                        continue
+
+    with open(all_cut_path, 'a', newline="") as f:
+        writer = csv.writer(f)
+        for row1 in data_2D_cut:
+            for row2 in data_2D_cut:
+                if row1[6] == row2[6]:
+                    continue
+                else:
+                    try:
+                        writer.writerow([row1[5], row1[6], row1[8], row2[6], row2[8]])
                         cutPairs += 1
                     except (ValueError, IndexError) as e:
                         print(f"Error processing a row: {e}")
@@ -81,3 +95,6 @@ for i in range(0, len(raw_data)):
 
 print("Total cut pairs: ", total_cut_pairs)
 print("Total uncut pairs: ", total_uncut_pairs)
+
+df = pd.read_csv(all_cut_path)
+print("Final Cut Length: ", len(df))

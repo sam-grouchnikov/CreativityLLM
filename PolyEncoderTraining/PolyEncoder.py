@@ -1,9 +1,19 @@
 import torch
 import torch.nn as nn
 from transformers import BertModel
+import pytorch_lightning as pl
+import torch.nn.functional as F
+
+def BCELoss(predict1, predict2, actual1, actual2, eps=1e-8):
+    predictDiff = predict1 - predict2
+    softTarget = actual1 / (actual1 + actual2 + eps)
+    softTarget = softTarget.to(predict1.device).float()
+    loss = -(softTarget * F.logsigmoid(predictDiff) +
+             (1 - softTarget) * F.logsigmoid(-predictDiff))
+    return loss.mean()
 
 class PolyEncoder(nn.Module):
-    def __init__(self, model_name = "bert-base-uncased", code_count = 64):
+    def __init__(self, model_name, code_count):
         super().__init__()
         self.bert = BertModel.from_pretrained(model_name)
         self.poly_codes = nn.Embedding(code_count, self.bert.config.hidden_size)
@@ -90,3 +100,41 @@ class PolyEncoder(nn.Module):
         scores = torch.sum(ctx_final * cand_vecs, dim=-1)  # [b]
 
         return scores
+
+class PolyEncoderLightning(pl.LightningModule):
+    def __init__(self, model_name, code_count, lr):
+        super().__init__()
+        self.save_hyperparameters()
+        self.model = PolyEncoder(model_name = model_name, code_count = code_count)
+        self.lr = lr
+
+    def training_step(self, batch, batch_idx):
+        (
+            ctx_input, ctx_mask,
+            cand1_input, cand1_mask, cand2_input, cand2_mask,
+            actual1, actual2
+        ) = batch
+
+        predict1 = self.model(ctx_input, ctx_mask, cand1_input, cand1_mask)
+        predict2 = self.model(ctx_input, ctx_mask, cand2_input, cand2_mask)
+
+        loss = BCELoss(predict1, predict2, actual1, actual2)
+        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        (
+            ctx_input, ctx_mask,
+            cand1_input, cand1_mask, cand2_input, cand2_mask,
+            actual1, actual2
+        ) = batch
+
+        predict1 = self.model(ctx_input, ctx_mask, cand1_input, cand1_mask)
+        predict2 = self.model(ctx_input, ctx_mask, cand2_input, cand2_mask)
+
+        loss = BCELoss(predict1, predict2, actual1, actual2)
+        self.log("val_loss", loss, on_epoch=True, prog_bar=True)
+        return loss
+
+    def configure_optimizers(self):
+        return torch.optim.AdamW(self.parameters(), lr=self.lr)

@@ -21,7 +21,7 @@ tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 tokenizer_name = "bert-base-uncased"
 
 # Load full dataset
-path = "CreativityLLM\\TrainingData\\PairwiseComparisons\\AllCut.csv"
+path = "/home/ubuntu/datasets/AllCut.csv"
 dm = PairwiseDatasetLightning(path, tokenizer, batch_size=batch_size, max_len=max_len)
 
 model = PolyEncoderLightning(tokenizer_name, poly_m, learning_rate)

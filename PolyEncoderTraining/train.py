@@ -7,10 +7,10 @@ from PolyEncoderTraining.CustomDataset import PairwiseDatasetLightning
 from PolyEncoderTraining.PolyEncoder import PolyEncoderLightning
 
 batch_size = 128
-epochs = 3
+epochs = 5
 learning_rate = 3e-5
 poly_m = 64
-max_len = 128
+max_len = 64
 devices = torch.cuda.device_count()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

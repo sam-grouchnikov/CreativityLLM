@@ -10,8 +10,8 @@ from pytorch_lightning.loggers import WandbLogger
 from PolyEncoderTraining.PolyEncoder import PolyEncoder
 from PolyEncoderTraining.CustomDataset import PairwiseDataModule
 
-batch_size = 128
-epochs = 5
+batch_size = 256
+epochs = 1
 learning_rate = 3e-5
 poly_m = 64
 max_len = 64

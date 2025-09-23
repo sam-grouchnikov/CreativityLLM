@@ -1,4 +1,6 @@
+
 from lightning.pytorch.callbacks import ModelCheckpoint
+from lightning.pytorch.strategies import DDPStrategy
 
 print("Starting imports")
 import torch
@@ -36,6 +38,7 @@ checkpoint_callback = ModelCheckpoint(
 
 trainer = Trainer(
     max_epochs=epochs,
+    strategy=DDPStrategy(find_unused_parameters=True),
     accelerator="gpu",
     devices=devices,
     precision=16,

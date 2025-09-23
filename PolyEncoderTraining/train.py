@@ -13,8 +13,6 @@ poly_m = 64
 max_len = 64
 devices = torch.cuda.device_count()
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
 wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
@@ -31,7 +29,9 @@ trainer = Trainer(
     accelerator="gpu",
     devices = devices,
     logger = wandb_logger,
-    log_every_n_steps=500
+    log_every_n_steps=500,
+    default_root_dir="/home/ubuntu",
+    enable_checkpointing=True,
 )
 
 trainer.fit(model, dm)

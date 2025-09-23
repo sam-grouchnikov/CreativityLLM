@@ -1,3 +1,4 @@
+from lightning.pytorch.callbacks import ModelCheckpoint
 
 print("Starting imports")
 import torch
@@ -25,15 +26,25 @@ dm = PairwiseDatasetLightning(path, tokenizer, batch_size=batch_size, max_len=ma
 
 model = PolyEncoder(tokenizer_name, poly_m)
 
+checkpoint_callback = ModelCheckpoint(
+    dirpath="/home/ubuntu/checkpoints",
+    filename="epoch-{epoch:02d}",
+    save_top_k=-1,
+    every_n_epochs=1,
+    save_last=True
+)
+
 trainer = Trainer(
     max_epochs=epochs,
     accelerator="gpu",
-    devices = devices,
+    devices=devices,
     precision=16,
-    logger = wandb_logger,
+    logger=wandb_logger,
     log_every_n_steps=500,
+    val_check_interval=1.0,
+    callbacks=[checkpoint_callback],
     default_root_dir="/home/ubuntu",
-    enable_checkpointing=True,
+    enable_checkpointing=True
 )
 
 trainer.fit(model, dm)

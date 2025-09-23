@@ -38,16 +38,13 @@ class PairwiseDataModule(pl.LightningDataModule):
             cand1_input, cand1_mask = encode(row["candidate1"])
             cand2_input, cand2_mask = encode(row["candidate2"])
 
-            return {
-                "ctx_input": ctx_input,
-                "ctx_mask": ctx_mask,
-                "cand1_input": cand1_input,
-                "cand1_mask": cand1_mask,
-                "score1": torch.tensor(row["score1"], dtype=torch.float),
-                "cand2_input": cand2_input,
-                "cand2_mask": cand2_mask,
-                "score2": torch.tensor(row["score2"], dtype=torch.float),
-            }
+            return (
+                ctx_input, ctx_mask,
+                cand1_input, cand1_mask,
+                cand2_input, cand2_mask,
+                torch.tensor(row["score1"], dtype=torch.float),
+                torch.tensor(row["score2"], dtype=torch.float),
+            )
 
     def setup(self, stage=None):
         data = pd.read_csv(self.csv_path, names=["context", "candidate1", "score1", "candidate2", "score2"])

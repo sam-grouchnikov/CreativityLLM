@@ -13,12 +13,13 @@ def BCELoss(predict1, predict2, actual1, actual2, eps=1e-8):
     return loss.mean()
 
 class PolyEncoder(L.LightningModule):
-    def __init__(self, model_name, code_count):
+    def __init__(self, model_name, code_count, lr):
         super().__init__()
         self.save_hyperparameters()
 
         # BERT + poly-codes
         self.bert = BertModel.from_pretrained(model_name)
+        self.lr = lr
         self.poly_codes = nn.Embedding(code_count, self.bert.config.hidden_size)
 
     def encodeContext(self, input_ids, attention_mask):

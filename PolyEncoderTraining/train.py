@@ -6,7 +6,7 @@ from lightning import Trainer
 from transformers import BertTokenizer
 from pytorch_lightning.loggers import WandbLogger
 from PolyEncoderTraining.PolyEncoder import PolyEncoder
-from CustomDataset import PairwiseDatasetLightning
+from PolyEncoderTraining.CustomDataset import PairwiseDatasetLightning
 
 batch_size = 128
 epochs = 5

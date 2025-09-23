@@ -1,5 +1,6 @@
 import torch
 from lightning import Trainer
+from pytorch_lightning import LightningModule
 from transformers import BertTokenizer
 from pytorch_lightning.loggers import WandbLogger
 
@@ -22,7 +23,7 @@ tokenizer_name = "bert-base-uncased"
 path = "/home/ubuntu/datasets/AllCut.csv"
 dm = PairwiseDatasetLightning(path, tokenizer, batch_size=batch_size, max_len=max_len)
 
-model = PolyEncoderLightning(tokenizer_name, poly_m)
+model: LightningModule = PolyEncoderLightning(tokenizer_name, poly_m)
 
 trainer = Trainer(
     max_epochs=epochs,

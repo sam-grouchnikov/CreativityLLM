@@ -28,6 +28,7 @@ trainer = Trainer(
     max_epochs=epochs,
     accelerator="gpu",
     devices = devices,
+    precision=16,
     logger = wandb_logger,
     log_every_n_steps=500,
     default_root_dir="/home/ubuntu",

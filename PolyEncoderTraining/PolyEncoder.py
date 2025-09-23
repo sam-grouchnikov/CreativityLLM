@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 from transformers import BertModel
-import pytorch_lightning as pl
 import torch.nn.functional as F
+import lightning as L
 
 def BCELoss(predict1, predict2, actual1, actual2, eps=1e-8):
     predictDiff = predict1 - predict2
@@ -12,7 +12,7 @@ def BCELoss(predict1, predict2, actual1, actual2, eps=1e-8):
              (1 - softTarget) * F.logsigmoid(-predictDiff))
     return loss.mean()
 
-class PolyEncoderLightning(pl.LightningModule):
+class PolyEncoder(L.LightningModule):
     def __init__(self, model_name, code_count):
         super().__init__()
         self.save_hyperparameters()

@@ -1,0 +1,6 @@
+wandb
+torch
+lightning
+pandas
+numpy
+transformers

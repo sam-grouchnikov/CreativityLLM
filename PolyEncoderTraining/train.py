@@ -24,7 +24,7 @@ tokenizer_name = "bert-base-uncased"
 path = "/home/ubuntu/datasets/AllCut.csv"
 dm = PairwiseDatasetLightning(path, tokenizer, batch_size=batch_size, max_len=max_len)
 
-model = PolyEncoder(tokenizer_name, poly_m)
+model = PolyEncoder(tokenizer_name, poly_m, learning_rate)
 
 checkpoint_callback = ModelCheckpoint(
     dirpath="/home/ubuntu/checkpoints",

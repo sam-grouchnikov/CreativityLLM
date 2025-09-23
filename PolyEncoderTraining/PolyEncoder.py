@@ -111,8 +111,8 @@ class PolyEncoder(L.LightningModule):
             actual1, actual2
         ) = batch
 
-        predict1 = self.model(ctx_input, ctx_mask, cand1_input, cand1_mask)
-        predict2 = self.model(ctx_input, ctx_mask, cand2_input, cand2_mask)
+        predict1 = self(ctx_input, ctx_mask, cand1_input, cand1_mask)
+        predict2 = self(ctx_input, ctx_mask, cand2_input, cand2_mask)
 
         loss = BCELoss(predict1, predict2, actual1, actual2)
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True)
@@ -125,8 +125,8 @@ class PolyEncoder(L.LightningModule):
             actual1, actual2
         ) = batch
 
-        predict1 = self.model(ctx_input, ctx_mask, cand1_input, cand1_mask)
-        predict2 = self.model(ctx_input, ctx_mask, cand2_input, cand2_mask)
+        predict1 = self(ctx_input, ctx_mask, cand1_input, cand1_mask)
+        predict2 = self(ctx_input, ctx_mask, cand2_input, cand2_mask)
 
         loss = BCELoss(predict1, predict2, actual1, actual2)
         self.log("val_loss", loss, on_epoch=True, prog_bar=True)

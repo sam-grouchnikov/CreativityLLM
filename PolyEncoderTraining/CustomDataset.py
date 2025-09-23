@@ -44,7 +44,7 @@ class PairwiseDataset(Dataset):
         }
 
 class PairwiseDatasetLightning(pl.LightningDataModule):
-    def __init__(self, data_csv, tokenizer, batch_size, max_len, seed):
+    def __init__(self, data_csv, tokenizer, batch_size, max_len, seed = 42):
         super().__init__()
         self.data_csv = data_csv
         self.tokenizer = tokenizer

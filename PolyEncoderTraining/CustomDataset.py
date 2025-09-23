@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import Dataset, DataLoader, random_split
 import pandas as pd
-import pytorch_lightning as pl
+import lightning as pl
 
 class PairwiseDataModule(pl.LightningDataModule):
     def __init__(self, csv_path, tokenizer, batch_size=32, max_len=128, seed=42):

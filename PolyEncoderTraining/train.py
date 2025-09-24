@@ -10,7 +10,7 @@ from pytorch_lightning.loggers import WandbLogger
 from PolyEncoderTraining.PolyEncoder import PolyEncoder
 from PolyEncoderTraining.CustomDataset import PairwiseDataModule
 
-batch_size = 256
+batch_size = 128
 epochs = 1
 learning_rate = 3e-5
 poly_m = 64
@@ -40,7 +40,7 @@ trainer = Trainer(
     max_epochs=epochs,
     strategy=DDPStrategy(find_unused_parameters=True),
     accelerator="gpu",
-    devices=devices,
+    devices=3,
     precision=16,
     logger=wandb_logger,
     log_every_n_steps=25,

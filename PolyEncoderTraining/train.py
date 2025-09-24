@@ -15,14 +15,13 @@ import wandb
 import os
 batch_size = 128
 epochs = 100
-learning_rate = 1e-4
-poly_m = 64
+learning_rate = 3e-5
+poly_m = 128
 max_len = 128
 devices = torch.cuda.device_count()
 torch.cuda.empty_cache()
 
 wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")
-wandb.init(project="poly-encoder-iterations", name="test1")
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 tokenizer_name = "bert-base-uncased"

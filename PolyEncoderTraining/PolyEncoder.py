@@ -6,28 +6,23 @@ import lightning as L
 import wandb
 
 def BCELoss(predict1, predict2, actual1, actual2, eps=1e-8):
-    predictDiff = predict1 - predict2
-    softTarget = actual1 / (actual1 + actual2 + eps)
-    softTarget = softTarget.to(predict1.device).float()
-    loss = -(softTarget * F.logsigmoid(predictDiff) +
-             (1 - softTarget) * F.logsigmoid(-predictDiff))
+    # predictDiff = predict1 - predict2
+    # softTarget = actual1 / (actual1 + actual2 + eps)
+    # softTarget = softTarget.to(predict1.device).float()
+    # loss = -(softTarget * F.logsigmoid(predictDiff) +
+    #          (1 - softTarget) * F.logsigmoid(-predictDiff))
+    #
+    # return loss.mean()
 
-    return loss.mean()
+    pred_diff = predict1 - predict2  # [batch]
 
-def SoftZeroOneLoss(predict1, predict2):
-    """
-    Differentiable approximation of 0/1 loss.
-    Returns a loss that is low when predict1 > predict2 and high otherwise.
-    """
-    # Difference between predictions
-    diff = predict1 - predict2
+    # Target: 1 if actual1 > actual2, else 0
+    target = (actual1 > actual2).float()
 
-    # Apply sigmoid to get probability that predict1 > predict2
-    prob = torch.sigmoid(diff)  # prob ~ 1 if predict1 >> predict2, ~0 if predict1 << predict2
+    # BCE with logits ensures stable gradients
+    loss = F.binary_cross_entropy_with_logits(pred_diff, target)
 
-    # Take negative log-probability for loss
-    loss = -torch.log(prob + 1e-8)  # small epsilon for numerical stability
-    return loss.mean()
+    return loss
 
 class PolyEncoder(L.LightningModule):
     def __init__(self, model_name, code_count, lr):
@@ -36,6 +31,8 @@ class PolyEncoder(L.LightningModule):
 
         # BERT + poly-codes
         self.bert = BertModel.from_pretrained(model_name)
+        for param in self.bert.parameters():
+            param.requires_grad = False
         self.lr = lr
         self.poly_codes = nn.Embedding(code_count, self.bert.config.hidden_size)
 
@@ -151,5 +148,5 @@ class PolyEncoder(L.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        return torch.optim.AdamW(self.parameters(), lr=self.lr)
+        return torch.optim.AdamW(self.poly_codes.parameters(), lr=self.lr)
 

@@ -84,58 +84,51 @@ class PolyEncoder(L.LightningModule):
 
     def forward(self, ctx_input, ctx_mask, cand_input, cand_mask):
         """
-        Compute relevance scores between context and multiple candidates.
-
-        Args:
-            ctx_input:  [b, T_ctx]
-            ctx_mask:   [b, T_ctx]
-            cand_input: [b, k, T_cand]  -- k candidates per context
-            cand_mask:  [b, k, T_cand]
-
-        Returns:
-            scores: [b, k] -- similarity scores for each candidate
+                Compute relevance score between context and candidate.
+                Returns:
+                    scores: [b]  -- max similarity across poly codes
         """
-        b, k, T_cand = cand_input.size()
 
-        # Flatten candidates to run through BERT
-        cand_input = cand_input.view(b * k, T_cand)
-        cand_mask = cand_mask.view(b * k, T_cand)
+        ctx_vecs = self.encodeContext(ctx_input, ctx_mask) # [b, m, h]
+        cand_vecs = self.encodeCandidate(cand_input, cand_mask) # [b, h]
 
-        # Encode
-        ctx_vecs = self.encodeContext(ctx_input, ctx_mask)  # [b, m, h]
-        cand_vecs = self.encodeCandidate(cand_input, cand_mask)  # [b*k, h]
-        cand_vecs = cand_vecs.view(b, k, -1)  # [b, k, h]
+        # [b, m, h] dot [b, h] -> [b, m]
+        attn_scores = torch.bmm(ctx_vecs, cand_vecs.unsqueeze(-1)).squeeze(-1)
+        attn_weights = torch.softmax(attn_scores, dim=-1)  # [b, m]
 
-        # Compute attention between each context and candidate
-        # Expand ctx_vecs to match candidates: [b, m, h] -> [b, k, m, h]
-        ctx_vecs_exp = ctx_vecs.unsqueeze(1).expand(-1, k, -1, -1)  # [b, k, m, h]
-        cand_vecs_exp = cand_vecs.unsqueeze(2)  # [b, k, 1, h]
+        # Weighted sum of poly codes
+        ctx_final = torch.bmm(attn_weights.unsqueeze(1), ctx_vecs).squeeze(1)  # [b, h]
 
-        attn_scores = torch.matmul(ctx_vecs_exp, cand_vecs_exp.transpose(-1, -2)).squeeze(-1)  # [b, k, m]
-        attn_weights = torch.softmax(attn_scores, dim=-1)  # [b, k, m]
+        # Final similarity score
+        scores = torch.sum(ctx_final * cand_vecs, dim=-1)  # [b]
 
-        ctx_final = torch.matmul(attn_weights.unsqueeze(2), ctx_vecs_exp).squeeze(2)  # [b, k, h]
-
-        scores = torch.sum(ctx_final * cand_vecs, dim=-1)  # [b, k]
         return scores
 
     def training_step(self, batch, batch_idx):
-        ctx_input, ctx_mask, cand_inputs, cand_masks, scores = batch
-        # ctx_input: [B, T]
-        # cand_inputs: [B, 2, T]
-        # scores: [B, 2]
+        (
+            ctx_input, ctx_mask,
+            cand1_input, cand1_mask, cand2_input, cand2_mask,
+            actual1, actual2
+        ) = batch
 
-        preds = self(ctx_input, ctx_mask, cand_inputs, cand_masks)  # [B, 2]
+        predict1 = self(ctx_input, ctx_mask, cand1_input, cand1_mask)
+        predict2 = self(ctx_input, ctx_mask, cand2_input, cand2_mask)
 
-        loss = BCELoss(preds[:, 0], preds[:, 1], scores[:, 0], scores[:, 1])
+        loss = BCELoss(predict1, predict2, actual1, actual2)
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        ctx_input, ctx_mask, cand_inputs, cand_masks, scores = batch
-        preds = self(ctx_input, ctx_mask, cand_inputs, cand_masks)  # [B, 2]
+        (
+            ctx_input, ctx_mask,
+            cand1_input, cand1_mask, cand2_input, cand2_mask,
+            actual1, actual2
+        ) = batch
 
-        loss = BCELoss(preds[:, 0], preds[:, 1], scores[:, 0], scores[:, 1])
+        predict1 = self(ctx_input, ctx_mask, cand1_input, cand1_mask)
+        predict2 = self(ctx_input, ctx_mask, cand2_input, cand2_mask)
+
+        loss = BCELoss(predict1, predict2, actual1, actual2)
         self.log("val_loss", loss, on_epoch=True, prog_bar=True)
         return loss
 

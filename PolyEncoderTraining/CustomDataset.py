@@ -38,14 +38,12 @@ class PairwiseDataModule(pl.LightningDataModule):
             cand1_input, cand1_mask = encode(row["candidate1"])
             cand2_input, cand2_mask = encode(row["candidate2"])
 
-            # stack candidates along axis 0 -> [2, T]
-            cand_inputs = torch.stack([cand1_input, cand2_input], dim=0)  # [2, T]
-            cand_masks = torch.stack([cand1_mask, cand2_mask], dim=0)  # [2, T]
-
-            scores = torch.tensor([row["score1"], row["score2"]], dtype=torch.float)  # [2]
-
             return (
-                ctx_input, ctx_mask, cand_inputs, cand_masks, scores
+                ctx_input, ctx_mask,
+                cand1_input, cand1_mask,
+                cand2_input, cand2_mask,
+                torch.tensor(row["score1"], dtype=torch.float),
+                torch.tensor(row["score2"], dtype=torch.float),
             )
 
     def setup(self, stage=None):

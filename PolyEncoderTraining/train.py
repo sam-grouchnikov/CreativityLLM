@@ -45,7 +45,7 @@ trainer = Trainer(
     max_epochs=epochs,
     strategy=DDPStrategy(find_unused_parameters=True, timeout=timedelta(seconds=300)),
     accelerator="gpu",
-    devices=3,
+    devices=4,
     precision="16-mixed",
     logger=wandb_logger,
     log_every_n_steps=25,

@@ -37,7 +37,7 @@ checkpoint_callback = ModelCheckpoint(
     dirpath="/home/ubuntu/checkpoints",
     filename="epoch-{epoch:02d}",
     save_top_k=-1,
-    every_n_epochs=1,
+    every_n_epochs=100,
     save_last=True
 )
 

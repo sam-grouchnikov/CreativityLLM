@@ -14,8 +14,8 @@ from datetime import timedelta
 import os
 batch_size = 128
 epochs = 100
-learning_rate = 3e-5
-poly_m = 64
+learning_rate = 1e-2
+poly_m = 256
 max_len = 64
 devices = torch.cuda.device_count()
 torch.cuda.empty_cache()

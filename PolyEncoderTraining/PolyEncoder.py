@@ -115,6 +115,7 @@ class PolyEncoder(L.LightningModule):
         predict2 = self(ctx_input, ctx_mask, cand2_input, cand2_mask)
 
         loss = BCELoss(predict1, predict2, actual1, actual2)
+        loss.backward()
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True)
         return loss
 
@@ -133,4 +134,4 @@ class PolyEncoder(L.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        return torch.optim.AdamW(self.parameters(), lr=self.lr)
+        return torch.optim.AdamW(self.poly_codes.parameters(), lr=self.lr)

@@ -4,12 +4,39 @@ from transformers import BertModel
 import torch.nn.functional as F
 import lightning as L
 
-def BCELoss(predict1, predict2, actual1, actual2, eps=1e-8):
-    predictDiff = predict1 - predict2
-    softTarget = actual1 / (actual1 + actual2 + eps)
-    softTarget = softTarget.to(predict1.device).float()
-    loss = -(softTarget * F.logsigmoid(predictDiff) +
-             (1 - softTarget) * F.logsigmoid(-predictDiff))
+def BCELoss(predict1, predict2, actual1, actual2, eps=1e-8, scale=5.0, margin=0.1):
+    # Compute soft target ratio (scaled)
+    diff_target = (actual1 - actual2) * scale  # scale differences
+    soft_target = torch.sigmoid(diff_target)  # maps to (0,1)
+
+    # Compute predicted difference
+    diff_pred = predict1 - predict2
+
+    # Sigmoid-based pairwise loss
+    loss_pairwise = -(soft_target * F.logsigmoid(diff_pred) +
+                      (1 - soft_target) * F.logsigmoid(-diff_pred))
+
+    # Margin loss: encourages at least `margin` separation
+    loss_margin = F.relu(margin - diff_pred * torch.sign(diff_target))
+
+    # Combine losses
+    loss = loss_pairwise + 0.1 * loss_margin  # weight margin loss lightly
+    return loss.mean()
+
+
+def SoftZeroOneLoss(predict1, predict2):
+    """
+    Differentiable approximation of 0/1 loss.
+    Returns a loss that is low when predict1 > predict2 and high otherwise.
+    """
+    # Difference between predictions
+    diff = predict1 - predict2
+
+    # Apply sigmoid to get probability that predict1 > predict2
+    prob = torch.sigmoid(diff)  # prob ~ 1 if predict1 >> predict2, ~0 if predict1 << predict2
+
+    # Take negative log-probability for loss
+    loss = -torch.log(prob + 1e-8)  # small epsilon for numerical stability
     return loss.mean()
 
 class PolyEncoder(L.LightningModule):
@@ -115,7 +142,6 @@ class PolyEncoder(L.LightningModule):
         predict2 = self(ctx_input, ctx_mask, cand2_input, cand2_mask)
 
         loss = BCELoss(predict1, predict2, actual1, actual2)
-        loss.backward()
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True)
         return loss
 

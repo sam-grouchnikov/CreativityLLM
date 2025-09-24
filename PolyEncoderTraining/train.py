@@ -33,13 +33,13 @@ dm = PairwiseDataModule(path, tokenizer, batch_size=batch_size, max_len=max_len)
 
 model = PolyEncoder(tokenizer_name, poly_m, learning_rate)
 
-checkpoint_callback = ModelCheckpoint(
-    dirpath="/home/ubuntu/checkpoints",
-    filename="epoch-{epoch:02d}",
-    save_top_k=-1,
-    every_n_epochs=100,
-    save_last=True
-)
+# checkpoint_callback = ModelCheckpoint(
+#     dirpath="/home/ubuntu/checkpoints",
+#     filename="epoch-{epoch:02d}",
+#     save_top_k=-1,
+#     every_n_epochs=100,
+#     save_last=True
+# )
 
 trainer = Trainer(
     max_epochs=epochs,
@@ -49,6 +49,7 @@ trainer = Trainer(
     precision="16",
     logger=wandb_logger,
     log_every_n_steps=1,
+    limit_val_batches=0  # skip validation during training
     # val_check_interval=0.25,
     # callbacks=[checkpoint_callback],
     # default_root_dir="/home/ubuntu",

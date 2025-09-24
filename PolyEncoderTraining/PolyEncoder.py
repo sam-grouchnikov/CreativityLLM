@@ -151,21 +151,5 @@ class PolyEncoder(L.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        return torch.optim.AdamW(self.poly_codes.parameters(), lr=self.lr)
+        return torch.optim.AdamW(self.parameters(), lr=self.lr)
 
-    def on_after_backward(self):
-        total_norms = []
-        for name, param in self.named_parameters():
-            if param.grad is not None:
-                grad_norm = param.grad.norm().item()
-                total_norms.append(grad_norm)
-                wandb.log({f"grad_norm/{name}": grad_norm, "step": self.global_step})
-
-        if total_norms:
-            max_norm = max(total_norms)
-            mean_norm = sum(total_norms) / len(total_norms)
-            wandb.log({
-                "grad_norm/max": max_norm,
-                "grad_norm/mean": mean_norm,
-                "step": self.global_step
-            })

@@ -15,7 +15,7 @@ import os
 batch_size = 128
 epochs = 100
 learning_rate = 1e-4
-poly_m = 256
+poly_m = 64
 max_len = 128
 devices = torch.cuda.device_count()
 torch.cuda.empty_cache()

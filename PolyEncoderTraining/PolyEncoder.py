@@ -3,6 +3,7 @@ import torch.nn as nn
 from transformers import BertModel
 import torch.nn.functional as F
 import lightning as L
+import wandb
 
 def BCELoss(predict1, predict2, actual1, actual2, eps=1e-8):
     predictDiff = predict1 - predict2
@@ -11,9 +12,7 @@ def BCELoss(predict1, predict2, actual1, actual2, eps=1e-8):
     loss = -(softTarget * F.logsigmoid(predictDiff) +
              (1 - softTarget) * F.logsigmoid(-predictDiff))
 
-    correct = predict1 > predict2 and actual1 > actual2 or predict1 < predict2 and actual1 < actual2
-    lossVal = 1 if correct else 0
-    return lossVal.mean()
+    return loss.mean()
 
 def SoftZeroOneLoss(predict1, predict2):
     """
@@ -134,6 +133,7 @@ class PolyEncoder(L.LightningModule):
 
         loss = BCELoss(predict1, predict2, actual1, actual2)
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True)
+
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -152,3 +152,20 @@ class PolyEncoder(L.LightningModule):
 
     def configure_optimizers(self):
         return torch.optim.AdamW(self.poly_codes.parameters(), lr=self.lr)
+
+    def on_after_backward(self):
+        total_norms = []
+        for name, param in self.named_parameters():
+            if param.grad is not None:
+                grad_norm = param.grad.norm().item()
+                total_norms.append(grad_norm)
+                wandb.log({f"grad_norm/{name}": grad_norm, "step": self.global_step})
+
+        if total_norms:
+            max_norm = max(total_norms)
+            mean_norm = sum(total_norms) / len(total_norms)
+            wandb.log({
+                "grad_norm/max": max_norm,
+                "grad_norm/mean": mean_norm,
+                "step": self.global_step
+            })

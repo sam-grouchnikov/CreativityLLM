@@ -9,18 +9,26 @@ from transformers import BertTokenizer
 from pytorch_lightning.loggers import WandbLogger
 from PolyEncoderTraining.PolyEncoder import PolyEncoder
 from PolyEncoderTraining.CustomDataset import PairwiseDataModule
+from datetime import timedelta
 
+import os
 batch_size = 128
 epochs = 1
 learning_rate = 3e-5
 poly_m = 64
 max_len = 64
 devices = torch.cuda.device_count()
+torch.cuda.empty_cache()
 
 wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")
 
+os.environ["NCCL_ASYNC_ERROR_HANDLING"] = "1"
+os.environ["NCCL_BLOCKING_WAIT"] = "1"
+os.environ["TORCH_DISTRIBUTED_DEBUG"] = "DETAIL"
+
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 tokenizer_name = "bert-base-uncased"
+
 
 
 path = "/home/sam/datasets/AllCut.csv"
@@ -38,10 +46,10 @@ checkpoint_callback = ModelCheckpoint(
 
 trainer = Trainer(
     max_epochs=epochs,
-    strategy=DDPStrategy(find_unused_parameters=True),
+    strategy=DDPStrategy(find_unused_parameters=True, timeout=timedelta(seconds=300)),
     accelerator="gpu",
     devices=3,
-    precision=16,
+    precision="16-mixed",
     logger=wandb_logger,
     log_every_n_steps=25,
     val_check_interval=0.25,

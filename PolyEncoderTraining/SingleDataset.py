@@ -42,7 +42,7 @@ class ScoreDataModule(pl.LightningDataModule):
 
     def setup(self, stage=None):
         # Read CSV
-        data = pd.read_csv(self.csv_path, header=None)
+        data = pd.read_csv(self.csv_path, header=0)
         dataset = self.ScoreDataset(data, self.tokenizer, self.max_len)
 
         total_size = len(dataset)

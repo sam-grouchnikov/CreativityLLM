@@ -36,7 +36,7 @@ class ScoreDataModule(pl.LightningDataModule):
 
             ctx_input, ctx_mask = encode(row.iloc[5])  # column 6
             cand_input, cand_mask = encode(row.iloc[6])  # column 7
-            score = torch.tensor(row.iloc[8], dtype=torch.float)  # column 9
+            score = torch.tensor(float(row.iloc[8]), dtype=torch.float)  # column 9
 
             return ctx_input, ctx_mask, cand_input, cand_mask, score
 

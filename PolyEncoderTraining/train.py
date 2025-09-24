@@ -28,7 +28,7 @@ tokenizer_name = "bert-base-uncased"
 
 
 
-path = "/home/sam/datasets/AllCut.csv"
+path = "/home/ubuntu/datasets/AllCut.csv"
 dm = PairwiseDataModule(path, tokenizer, batch_size=batch_size, max_len=max_len)
 
 model = PolyEncoder(tokenizer_name, poly_m, learning_rate)

@@ -51,7 +51,7 @@ class PairwiseDataModule(pl.LightningDataModule):
         dataset = self.PairwiseDataset(data, self.tokenizer, self.max_len)
 
         total_size = len(dataset)
-        train_size = int(0.7 * total_size)
+        train_size = int(0.000015 * total_size)
         val_size = int(0.1 * total_size)
         test_size = total_size - train_size - val_size
         generator = torch.Generator().manual_seed(self.seed)

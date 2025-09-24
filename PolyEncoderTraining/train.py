@@ -13,7 +13,7 @@ from datetime import timedelta
 
 import os
 batch_size = 128
-epochs = 1
+epochs = 100
 learning_rate = 3e-5
 poly_m = 64
 max_len = 64
@@ -45,16 +45,16 @@ trainer = Trainer(
     max_epochs=epochs,
     strategy=DDPStrategy(find_unused_parameters=True, timeout=timedelta(seconds=300)),
     accelerator="gpu",
-    devices=8,
-    precision="16-mixed",
+    devices=3,
+    precision="16",
     logger=wandb_logger,
-    log_every_n_steps=25,
-    val_check_interval=0.25,
-    callbacks=[checkpoint_callback],
-    default_root_dir="/home/ubuntu",
-    enable_checkpointing=True
+    log_every_n_steps=1,
+    # val_check_interval=0.25,
+    # callbacks=[checkpoint_callback],
+    # default_root_dir="/home/ubuntu",
+    # enable_checkpointing=True
 )
 
 trainer.fit(model, dm)
 
-trainer.test(model, dm)
+# trainer.test(model, dm)

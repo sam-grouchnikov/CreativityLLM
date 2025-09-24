@@ -22,9 +22,6 @@ torch.cuda.empty_cache()
 
 wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")
 
-os.environ["NCCL_ASYNC_ERROR_HANDLING"] = "1"
-os.environ["NCCL_BLOCKING_WAIT"] = "1"
-os.environ["TORCH_DISTRIBUTED_DEBUG"] = "DETAIL"
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 tokenizer_name = "bert-base-uncased"

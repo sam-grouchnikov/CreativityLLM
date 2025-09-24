@@ -10,6 +10,7 @@ from pytorch_lightning.loggers import WandbLogger
 from PolyEncoderTraining.PolyEncoder import PolyEncoder
 from PolyEncoderTraining.CustomDataset import PairwiseDataModule
 from datetime import timedelta
+import wandb
 
 import os
 batch_size = 128
@@ -21,7 +22,7 @@ devices = torch.cuda.device_count()
 torch.cuda.empty_cache()
 
 wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")
-
+wandb.init(project="poly-encoder-iterations", name="test1")
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 tokenizer_name = "bert-base-uncased"

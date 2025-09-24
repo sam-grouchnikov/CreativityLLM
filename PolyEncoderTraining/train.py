@@ -9,6 +9,7 @@ from transformers import BertTokenizer
 from pytorch_lightning.loggers import WandbLogger
 from PolyEncoderTraining.PolyEncoder import PolyEncoder
 from PolyEncoderTraining.CustomDataset import PairwiseDataModule
+from PolyEncoderTraining.SingleDataset import ScoreDataModule
 from datetime import timedelta
 import wandb
 
@@ -28,8 +29,9 @@ tokenizer_name = "bert-base-uncased"
 
 
 
-path = "/home/sam/datasets/AllCut.csv"
-dm = PairwiseDataModule(path, tokenizer, batch_size=batch_size, max_len=max_len)
+# path = "/home/sam/datasets/AllCut.csv"
+path = "/home/sam/datasets/sctt.csv"
+dm = ScoreDataModule(path, tokenizer, batch_size=batch_size, max_len=max_len)
 
 model = PolyEncoder(tokenizer_name, poly_m, learning_rate)
 

@@ -5,24 +5,28 @@ import torch.nn.functional as F
 import lightning as L
 import wandb
 
-def BCELoss(predict1, predict2, actual1, actual2, eps=1e-8):
-    # predictDiff = predict1 - predict2
-    # softTarget = actual1 / (actual1 + actual2 + eps)
-    # softTarget = softTarget.to(predict1.device).float()
-    # loss = -(softTarget * F.logsigmoid(predictDiff) +
-    #          (1 - softTarget) * F.logsigmoid(-predictDiff))
-    #
-    # return loss.mean()
+# def BCELoss(predict1, predict2, actual1, actual2, eps=1e-8):
+#     # predictDiff = predict1 - predict2
+#     # softTarget = actual1 / (actual1 + actual2 + eps)
+#     # softTarget = softTarget.to(predict1.device).float()
+#     # loss = -(softTarget * F.logsigmoid(predictDiff) +
+#     #          (1 - softTarget) * F.logsigmoid(-predictDiff))
+#     #
+#     # return loss.mean()
+#
+#     pred_diff = predict1 - predict2  # [batch]
+#
+#     # Target: 1 if actual1 > actual2, else 0
+#     target = (actual1 > actual2).float()
+#
+#     # BCE with logits ensures stable gradients
+#     loss = F.binary_cross_entropy_with_logits(pred_diff, target)
+#
+#     return loss
 
-    pred_diff = predict1 - predict2  # [batch]
-
-    # Target: 1 if actual1 > actual2, else 0
-    target = (actual1 > actual2).float()
-
-    # BCE with logits ensures stable gradients
-    loss = F.binary_cross_entropy_with_logits(pred_diff, target)
-
-    return loss
+def regression_loss(pred, target):
+    # target is the actual creativity score (e.g., 0-1)
+    return F.mse_loss(pred, target)
 
 class PolyEncoder(L.LightningModule):
     def __init__(self, model_name, code_count, lr):
@@ -107,43 +111,27 @@ class PolyEncoder(L.LightningModule):
         cand_vecs = self.encodeCandidate(cand_input, cand_mask) # [b, h]
 
         # [b, m, h] dot [b, h] -> [b, m]
-        attn_scores = torch.bmm(ctx_vecs, cand_vecs.unsqueeze(-1)).squeeze(-1)
+        attn_scores = torch.bmm(ctx_vecs, cand_vecs.unsqueeze(-1)).squeeze(-1)  # [b, m]
         attn_weights = torch.softmax(attn_scores, dim=-1)  # [b, m]
 
         # Weighted sum of poly codes
         ctx_final = torch.bmm(attn_weights.unsqueeze(1), ctx_vecs).squeeze(1)  # [b, h]
 
         # Final similarity score
-        scores = torch.sum(ctx_final * cand_vecs, dim=-1)  # [b]
-
-        return scores
+        score = torch.sum(ctx_final * cand_vecs, dim=-1)  # [b]
+        return score
 
     def training_step(self, batch, batch_idx):
-        (
-            ctx_input, ctx_mask,
-            cand1_input, cand1_mask, cand2_input, cand2_mask,
-            actual1, actual2
-        ) = batch
-
-        predict1 = self(ctx_input, ctx_mask, cand1_input, cand1_mask)
-        predict2 = self(ctx_input, ctx_mask, cand2_input, cand2_mask)
-
-        loss = BCELoss(predict1, predict2, actual1, actual2)
+        ctx_input, ctx_mask, cand_input, cand_mask, actual_score = batch
+        pred_score = self(ctx_input, ctx_mask, cand_input, cand_mask)
+        loss = regression_loss(pred_score, actual_score)
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True)
-
         return loss
 
     def validation_step(self, batch, batch_idx):
-        (
-            ctx_input, ctx_mask,
-            cand1_input, cand1_mask, cand2_input, cand2_mask,
-            actual1, actual2
-        ) = batch
-
-        predict1 = self(ctx_input, ctx_mask, cand1_input, cand1_mask)
-        predict2 = self(ctx_input, ctx_mask, cand2_input, cand2_mask)
-
-        loss = BCELoss(predict1, predict2, actual1, actual2)
+        ctx_input, ctx_mask, cand_input, cand_mask, actual_score = batch
+        pred_score = self(ctx_input, ctx_mask, cand_input, cand_mask)
+        loss = regression_loss(pred_score, actual_score)
         self.log("val_loss", loss, on_epoch=True, prog_bar=True)
         return loss
 

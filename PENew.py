@@ -117,7 +117,7 @@ def main():
     wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")
 
     trainer = pl.Trainer(
-        max_epochs=30,
+        max_epochs=1,
         accelerator="gpu",
         devices=3,
         precision="16",

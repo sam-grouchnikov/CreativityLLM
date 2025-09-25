@@ -1,5 +1,6 @@
 import torch
 from lightning.pytorch.loggers import WandbLogger
+from lightning.pytorch.strategies import DDPStrategy
 from torch.utils.data import Dataset, DataLoader
 from transformers import AutoTokenizer
 import pandas as pd
@@ -123,7 +124,8 @@ def main():
         logger=wandb_logger,
         log_every_n_steps=1,
         limit_val_batches=0,
-        overfit_batches=1
+        overfit_batches=1,
+        strategy=DDPStrategy(find_unused_parameters=True)
     )
     trainer.fit(model, dataloader)
 

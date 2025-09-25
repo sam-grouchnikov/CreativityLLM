@@ -111,7 +111,7 @@ class CreativityRanker(pl.LightningModule):
 
 def main():
     dataset = CreativityRankingDataset("/home/sam/datasets/AllCut.csv")
-    dataloader = DataLoader(dataset, batch_size=70, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=128, shuffle=True)
 
     model = CreativityRanker()
     wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")
@@ -124,7 +124,6 @@ def main():
         logger=wandb_logger,
         log_every_n_steps=1,
         limit_val_batches=0,
-        overfit_batches=1,
         strategy=DDPStrategy(find_unused_parameters=True)
     )
     trainer.fit(model, dataloader)

@@ -22,9 +22,9 @@ class CreativityRankingDataset(Dataset):
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
 
-        question = row['question']
-        r1, s1 = row['response_1'], row['score_1']
-        r2, s2 = row['response_2'], row['score_2']
+        question = row[0]
+        r1, s1 = row[1], row[2]
+        r2, s2 = row[3], row[4]
 
         q_inputs = self.tokenizer(question, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
         r1_inputs = self.tokenizer(r1, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")

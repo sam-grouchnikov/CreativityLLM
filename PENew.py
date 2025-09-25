@@ -20,12 +20,15 @@ class CreativityRankingDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
+    def _safe_str(self, x):
+        return x if isinstance(x, str) else ""
+
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
 
-        question = row[0]
-        r1, s1 = row[1], row[2]
-        r2, s2 = row[3], row[4]
+        question = self._safe_str(row[0])
+        r1, s1 = self._safe_str(row[1]), row[2]
+        r2, s2 = self._safe_str(row[3]), row[4]
 
         q_inputs = self.tokenizer(question, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
         r1_inputs = self.tokenizer(r1, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
@@ -39,6 +42,7 @@ class CreativityRankingDataset(Dataset):
             "response_2_input": {k: v.squeeze(0) for k, v in r2_inputs.items()},
             "label": torch.tensor(label, dtype=torch.long)
         }
+
 
 class PolyEncoder(nn.Module):
     def __init__(self, model_name="bert-base-uncased", poly_m=16):

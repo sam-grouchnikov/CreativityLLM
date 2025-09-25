@@ -52,8 +52,8 @@ class PolyEncoder(nn.Module):
         # Init poly-code indices
         self.register_buffer("poly_code_ids", torch.arange(poly_m))
 
-    def encode_question(self, input_ids, attention_mask):
-        output = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
+    def encode_question(self, input_ids, attention_mask, token_type_ids=None):
+        output = self.encoder(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
         token_embeddings = output.last_hidden_state  # [B, L, H]
 
         poly_codes = self.poly_codes(self.poly_code_ids)  # [M, H]
@@ -65,8 +65,8 @@ class PolyEncoder(nn.Module):
         attended = torch.bmm(attn_weights, token_embeddings)  # [B, M, H]
         return attended  # [B, M, H]
 
-    def encode_response(self, input_ids, attention_mask):
-        output = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
+    def encode_response(self, input_ids, attention_mask, token_type_ids=None):
+        output = self.encoder(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids)
         return output.last_hidden_state[:, 0, :]  # CLS token: [B, H]
 
     def forward(self, question_inputs, response_inputs):

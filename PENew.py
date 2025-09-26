@@ -114,7 +114,7 @@ class CreativityRanker(pl.LightningModule):
         return torch.optim.AdamW(self.parameters(), lr=self.lr)
 
 def main():
-    dataset = CreativityRankingDataset("/home/sam/datasets/AllCut.csv")
+    dataset = CreativityRankingDataset("/home/ubuntu/datasets/AllCut.csv")
     dataloader = DataLoader(dataset, batch_size=128, shuffle=True)
 
     model = CreativityRanker()
@@ -123,7 +123,7 @@ def main():
     trainer = pl.Trainer(
         max_epochs=1,
         accelerator="gpu",
-        devices=3,
+        devices=8,
         precision="16",
         logger=wandb_logger,
         log_every_n_steps=1,

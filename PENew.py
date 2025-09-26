@@ -115,7 +115,7 @@ class CreativityRanker(pl.LightningModule):
 
 def main():
     dataset = CreativityRankingDataset("/home/ubuntu/datasets/AllCut.csv")
-    dataloader = DataLoader(dataset, batch_size=128, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     model = CreativityRanker()
     wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")

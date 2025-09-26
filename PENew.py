@@ -118,6 +118,9 @@ def main():
     dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     model = CreativityRanker()
+    for param in self.model.encoder.parameters():
+        param.requires_grad = False
+
     wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")
 
     trainer = pl.Trainer(

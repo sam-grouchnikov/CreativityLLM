@@ -117,11 +117,11 @@ def main():
 
     batch = 32
     epochs = 1
-    devices = 8
+    devices = 3
 
 
 
-    dataset = CreativityRankingDataset("/home/ubuntu/datasets/AllCut.csv")
+    dataset = CreativityRankingDataset("/home/sam/datasets/AllCut.csv")
     dataloader = DataLoader(dataset, batch_size=batch, shuffle=True)
 
     model = CreativityRanker()

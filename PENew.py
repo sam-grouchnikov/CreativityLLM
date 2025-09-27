@@ -115,7 +115,7 @@ class CreativityRanker(pl.LightningModule):
 
 def main():
 
-    batch = 32
+    batch = 128
     epochs = 1
     devices = 3
 

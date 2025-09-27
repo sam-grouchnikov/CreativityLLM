@@ -45,7 +45,7 @@ class CreativityRankingDataset(Dataset):
 
 
 class PolyEncoder(nn.Module):
-    def __init__(self, model_name="bert-base-uncased", poly_m=16):
+    def __init__(self, model_name="bert-base-uncased", poly_m=256):
         super().__init__()
         self.encoder = AutoModel.from_pretrained(model_name)
         self.hidden_size = self.encoder.config.hidden_size
@@ -114,8 +114,15 @@ class CreativityRanker(pl.LightningModule):
         return torch.optim.AdamW(self.parameters(), lr=self.lr)
 
 def main():
+
+    batch = 32
+    epochs = 1
+    devices = 8
+
+
+
     dataset = CreativityRankingDataset("/home/ubuntu/datasets/AllCut.csv")
-    dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=batch, shuffle=True)
 
     model = CreativityRanker()
     for param in model.model.encoder.parameters():
@@ -124,9 +131,9 @@ def main():
     wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")
 
     trainer = pl.Trainer(
-        max_epochs=1,
+        max_epochs=epochs,
         accelerator="gpu",
-        devices=8,
+        devices=devices,
         precision="16",
         logger=wandb_logger,
         log_every_n_steps=1,

@@ -45,7 +45,7 @@ class CreativityRankingDataset(Dataset):
 
 
 class PolyEncoder(nn.Module):
-    def __init__(self, model_name="bert-base-uncased", poly_m=256):
+    def __init__(self, model_name="bert-base-uncased", poly_m=64):
         super().__init__()
         self.encoder = AutoModel.from_pretrained(model_name)
         self.hidden_size = self.encoder.config.hidden_size
@@ -89,7 +89,7 @@ class PolyEncoder(nn.Module):
         return score
 
 class CreativityRanker(pl.LightningModule):
-    def __init__(self, model_name="bert-base-uncased", poly_m=256, lr=2e-5):
+    def __init__(self, model_name="bert-base-uncased", poly_m=64, lr=2e-5):
         super().__init__()
         self.model = PolyEncoder(model_name, poly_m)
         self.lr = lr
@@ -127,6 +127,10 @@ def main():
     model = CreativityRanker()
     for param in model.model.encoder.parameters():
         param.requires_grad = False
+
+    for layer in model.model.encoder.encoder.layer[-2:]:
+        for param in layer.parameters():
+            param.requires_grad = True
 
     wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")
 

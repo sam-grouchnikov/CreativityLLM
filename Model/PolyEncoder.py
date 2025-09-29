@@ -11,39 +11,6 @@ import lightning as pl
 import torch
 import torch.nn.functional as F
 
-class CreativityRankingDataset(Dataset):
-    def __init__(self, csv_file, tokenizer_name="bert-base-uncased", max_length=128):
-        self.data = pd.read_csv(csv_file)
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
-        self.max_length = max_length
-
-    def __len__(self):
-        return len(self.data)
-
-    def _safe_str(self, x):
-        return x if isinstance(x, str) else ""
-
-    def __getitem__(self, idx):
-        row = self.data.iloc[idx]
-
-        question = self._safe_str(row[0])
-        r1, s1 = self._safe_str(row[1]), row[2]
-        r2, s2 = self._safe_str(row[3]), row[4]
-
-        q_inputs = self.tokenizer(question, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
-        r1_inputs = self.tokenizer(r1, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
-        r2_inputs = self.tokenizer(r2, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
-
-        label = 1 if s1 > s2 else -1  # Margin ranking label
-
-        return {
-            "question_input": {k: v.squeeze(0) for k, v in q_inputs.items()},
-            "response_1_input": {k: v.squeeze(0) for k, v in r1_inputs.items()},
-            "response_2_input": {k: v.squeeze(0) for k, v in r2_inputs.items()},
-            "label": torch.tensor(label, dtype=torch.long)
-        }
-
-
 class PolyEncoder(nn.Module):
     def __init__(self, model_name="bert-base-uncased", poly_m=64):
         super().__init__()
@@ -110,41 +77,12 @@ class CreativityRanker(pl.LightningModule):
         self.log("train_loss", loss)
         return loss
 
+    def validation_step(self, batch, batch_idx):
+        s1, s2 = self.forward(batch)
+        label = batch['label'].float()
+        loss = F.margin_ranking_loss(s1, s2, label, margin=0.2)
+        self.log("val_loss", loss, prog_bar=True)
+        return loss
+
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.lr)
-
-def main():
-
-    batch = 128
-    epochs = 1
-    devices = 3
-
-
-
-    dataset = CreativityRankingDataset("/home/sam/datasets/AllCut.csv")
-    dataloader = DataLoader(dataset, batch_size=batch, shuffle=True)
-
-    model = CreativityRanker()
-    for param in model.model.encoder.parameters():
-        param.requires_grad = False
-
-    for layer in model.model.encoder.encoder.layer[-2:]:
-        for param in layer.parameters():
-            param.requires_grad = True
-
-    wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")
-
-    trainer = pl.Trainer(
-        max_epochs=epochs,
-        accelerator="gpu",
-        devices=devices,
-        precision="16",
-        logger=wandb_logger,
-        log_every_n_steps=1,
-        limit_val_batches=0,
-        strategy=DDPStrategy(find_unused_parameters=True)
-    )
-    trainer.fit(model, dataloader)
-
-if __name__ == "__main__":
-    main()

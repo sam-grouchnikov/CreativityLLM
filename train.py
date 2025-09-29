@@ -39,9 +39,9 @@ def main():
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
-    # for layer in model.model.encoder.encoder.layer[2:]:
-    #     for param in layer.parameters():
-    #         param.requires_grad = True
+    for layer in model.model.encoder.encoder.layer[1:]:
+        for param in layer.parameters():
+            param.requires_grad = True
 
     wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")
 
@@ -52,8 +52,7 @@ def main():
         precision="16",
         logger=wandb_logger,
         log_every_n_steps=50,
-        val_check_interval=0.1,
-        strategy=DDPStrategy(find_unused_parameters=True)
+        val_check_interval=0.1
     )
     trainer.fit(model, train_loader, val_loader)
 

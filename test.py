@@ -68,6 +68,7 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
 
     preds_min = preds.min()
     preds_max = preds.max()
+    print("Min, max: ", preds_min, preds_max)
     preds_norm = (preds - preds_min) / (preds_max - preds_min + 1e-8)
 
     # Print a few samples

@@ -61,10 +61,12 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
             scores = model.model(q_input, r_input)  # PolyEncoder returns single score
             preds.append(scores.cpu())
             targets.append(batch["score"].cpu())
-            print(scores.cpu(), batch["score"].cpu())
 
     preds = torch.cat(preds).numpy()
     targets = torch.cat(targets).numpy()
+
+    for i in range(min(20, len(preds))):  # only show first 10 to avoid spam
+        print(f"Pred: {preds[i]:.4f} | Actual: {targets[i]:.4f}")
 
     pearson_corr = pearsonr(preds, targets)[0]
     print(f"Pearson correlation: {pearson_corr:.4f}")

@@ -15,13 +15,14 @@ import torch.nn.functional as F
 
 from Model.CustomDataset import CreativityRankingDataset
 from Model.PolyEncoder import CreativityRanker
+from test import computeCorrelation
 
 
 def main():
 
     batch = 128
     epochs = 1
-    devices = 3
+    devices = torch.cuda.device_count()
     pl.seed_everything(42)
 
 
@@ -51,9 +52,18 @@ def main():
         precision="16",
         logger=wandb_logger,
         log_every_n_steps=1,
+        val_check_interval=0.08,
         strategy=DDPStrategy(find_unused_parameters=True)
     )
     trainer.fit(model, train_loader, val_loader)
+
+    testPath = "/home/sam/datasets/TestData.csv"
+
+    correlation = computeCorrelation(model, testPath, batch, "bert-base-uncased", 128)
+
+    wandb_logger.log_metrics({"correlation": correlation})
+
+
 
 if __name__ == "__main__":
     main()

@@ -18,24 +18,28 @@ class CorrelationDataset(Dataset):
 
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
-        prompt = str(row[0])
-        response = str(row[1])
-        label = float(row[2])
 
-        # Encode the pair for BERT-style models
-        inputs = self.tokenizer(
-            prompt,
-            response,
+        q_enc = self.tokenizer(
+            row["question"],
             truncation=True,
             padding="max_length",
             max_length=self.max_length,
-            return_tensors="pt",
+            return_tensors="pt"
         )
 
-        # Remove batch dimension
-        item = {k: v.squeeze(0) for k, v in inputs.items()}
-        item["score"] = torch.tensor(label, dtype=torch.float)
-        return item
+        r_enc = self.tokenizer(
+            row["response"],
+            truncation=True,
+            padding="max_length",
+            max_length=self.max_length,
+            return_tensors="pt"
+        )
+
+        return {
+            "question_input": {k: v.squeeze(0) for k, v in q_enc.items()},
+            "response_input": {k: v.squeeze(0) for k, v in r_enc.items()},
+            "score": torch.tensor(row["score"], dtype=torch.float)
+        }
 
 def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=128):
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)

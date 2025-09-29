@@ -6,6 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 from transformers import AutoTokenizer
 from scipy.stats import pearsonr
 import pandas as pd
+from scipy.special import expit
 
 class CorrelationDataset(Dataset):
     def __init__(self, csv_file, tokenizer_name="bert-base-uncased", max_length=128):
@@ -64,6 +65,9 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
 
     preds = torch.cat(preds).numpy()
     targets = torch.cat(targets).numpy()
+
+    for i in range(0, len(preds)):
+        preds[i] = expit(preds[i])
 
     for i in range(min(20, len(preds))):  # only show first 10 to avoid spam
         print(f"Pred: {preds[i]:.4f} | Actual: {targets[i]:.4f}")

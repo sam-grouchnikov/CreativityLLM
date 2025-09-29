@@ -20,7 +20,7 @@ class CorrelationDataset(Dataset):
         row = self.data.iloc[idx]
 
         q_enc = self.tokenizer(
-            row['prompt'],
+            row[5],
             truncation=True,
             padding="max_length",
             max_length=self.max_length,
@@ -28,7 +28,7 @@ class CorrelationDataset(Dataset):
         )
 
         r_enc = self.tokenizer(
-            row['response'],
+            row[6],
             truncation=True,
             padding="max_length",
             max_length=self.max_length,
@@ -38,7 +38,7 @@ class CorrelationDataset(Dataset):
         return {
             "question_input": {k: v.squeeze(0) for k, v in q_enc.items()},
             "response_input": {k: v.squeeze(0) for k, v in r_enc.items()},
-            "score": torch.tensor(row['se'], dtype=torch.float)
+            "score": torch.tensor(row[8], dtype=torch.float)
         }
 
 def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=128):

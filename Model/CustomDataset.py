@@ -31,7 +31,8 @@ class CreativityRankingDataset(Dataset):
         r1_inputs = self.tokenizer(r1, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
         r2_inputs = self.tokenizer(r2, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
 
-        label = float(row[3])  # Margin ranking label
+        row_label = float(row[3])
+        label = 1 if row_label > 0 else -1
 
         return {
             "question_input": {k: v.squeeze(0) for k, v in q_inputs.items()},

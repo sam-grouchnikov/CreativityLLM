@@ -1,6 +1,7 @@
 import pandas as pd
 from itertools import combinations
 from sklearn.model_selection import train_test_split
+import csv
 
 # Load SCTT file
 df = pd.read_csv("C:\\Users\\samgr\\PycharmProjects\\CreativityLLM\\sctt.csv", header=0)
@@ -18,8 +19,9 @@ line_count = 0
 
 # Open CSV for train/val pairs (write incrementally)
 train_file = "C:\\Users\\samgr\\PycharmProjects\\CreativityLLM\\TrainData.csv"
-with open(train_file, "w", encoding="utf-8") as f:
-    f.write("prompt,response1,response2,label\n")  # header
+with open(train_file, "w", encoding="utf-8", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow(["prompt", "response1", "response2", "label"])  # header
 
     # Process each prompt individually
     for prompt, group in df.groupby('prompt'):
@@ -30,10 +32,10 @@ with open(train_file, "w", encoding="utf-8") as f:
         for r1, r2 in combinations(train_val.itertuples(index=False), 2):
             label = r1.se - r2.se
             # Original order
-            f.write(f"{prompt},{r1.response},{r2.response},{label}\n")
+            writer.writerow([prompt, r1.response, r2.response, label])
             line_count += 1
             # Flipped order
-            f.write(f"{prompt},{r2.response},{r1.response},{-label}\n")
+            writer.writerow([prompt, r2.response, r1.response, -label])
             line_count += 1
 
         # Step 3: Keep individual responses for test

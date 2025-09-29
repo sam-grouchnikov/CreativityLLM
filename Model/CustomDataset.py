@@ -23,15 +23,15 @@ class CreativityRankingDataset(Dataset):
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
 
-        question = row[0]
-        r1 = row[1]
-        r2 = row[2]
+        question = str(row[0])
+        r1 = str(row[1])
+        r2 = str(row[2])
 
         q_inputs = self.tokenizer(question, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
         r1_inputs = self.tokenizer(r1, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
         r2_inputs = self.tokenizer(r2, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
 
-        label = row[3]  # Margin ranking label
+        label = float(row[3])  # Margin ranking label
 
         return {
             "question_input": {k: v.squeeze(0) for k, v in q_inputs.items()},

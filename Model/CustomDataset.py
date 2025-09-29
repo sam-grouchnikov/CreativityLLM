@@ -24,14 +24,14 @@ class CreativityRankingDataset(Dataset):
         row = self.data.iloc[idx]
 
         question = row[0]
-        r1, s1 = row[1], row[2]
-        r2, s2 = row[3], row[4]
+        r1 = row[1]
+        r2 = row[2]
 
         q_inputs = self.tokenizer(question, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
         r1_inputs = self.tokenizer(r1, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
         r2_inputs = self.tokenizer(r2, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
 
-        label = 1 if s1 > s2 else -1  # Margin ranking label
+        label = row[3]  # Margin ranking label
 
         return {
             "question_input": {k: v.squeeze(0) for k, v in q_inputs.items()},

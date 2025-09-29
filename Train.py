@@ -32,6 +32,8 @@ def main():
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
     train_loader = DataLoader(train_dataset, batch_size=batch, shuffle=True, num_workers=15)
+    for batch in train_loader:
+        print(batch.__getitem__())
     val_loader = DataLoader(val_dataset, batch_size=batch, shuffle=False, num_workers=15)
 
     model = CreativityRanker()

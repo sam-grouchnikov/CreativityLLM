@@ -39,7 +39,7 @@ class CorrelationDataset(Dataset):
 
 def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=128):
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
-    dataset = CorrelationDataset(csv_path, tokenizer, max_length=max_length)
+    dataset = CorrelationDataset(csv_path, tokenizer_name, max_length=max_length)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle = False)
 
     model.eval()

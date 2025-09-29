@@ -39,9 +39,9 @@ def main():
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
-    for layer in model.model.encoder.encoder.layer[0:]:
+    for layer in model.model.encoder.encoder:
         for param in layer.parameters():
-            param.requires_grad = True
+            param.requires_grad = False
 
     wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")
 

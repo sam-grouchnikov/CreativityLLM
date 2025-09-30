@@ -79,11 +79,14 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
     print(f"Spearman correlation: {spearman_corr:.4f}")
 
     plt.figure(figsize=(6, 6))
-    plt.scatter(targets, preds_norm, c=dataset.data["question_input"].astype('category').7cat.codes, cmap="tab20", alpha=0.6)
+    colors = dataset.data.iloc[:, 0].astype("category").cat.codes  # first column = question text
+    plt.scatter(targets, preds_norm, c=colors, cmap="tab20", alpha=0.6)
     plt.xlabel("Actual scores")
     plt.ylabel("Predicted scores (normalized)")
     plt.title(f"Predicted vs Actual (r={pearson_corr:.2f}, rho={spearman_corr:.2f})")
     plt.grid(True)
+    plt.savefig("pred_vs_actual.png")  # save BEFORE plt.show()
     plt.show()
+
     plt.savefig("pred_vs_actual.png")
     return pearson_corr

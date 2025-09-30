@@ -63,7 +63,7 @@ def main():
         callbacks=[checkpoint_callback],
         precision="16",
         logger=wandb_logger,
-        log_every_n_steps=50,
+        log_every_n_steps=5,
     )
     trainer.fit(model, train_loader, val_loader)
 

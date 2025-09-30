@@ -73,14 +73,14 @@ class CreativityRanker(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         s1, s2 = self.forward(batch)
         label = batch['label'].float()
-        loss = F.margin_ranking_loss(s1, s2, label, margin=0.2)
+        loss = F.margin_ranking_loss(s1, s2, label, margin=0.05)
         self.log("train_loss", loss)
         return loss
 
     def validation_step(self, batch, batch_idx):
         s1, s2 = self.forward(batch)
         label = batch['label'].float()
-        loss = F.margin_ranking_loss(s1, s2, label, margin=0.2)
+        loss = F.margin_ranking_loss(s1, s2, label, margin=0.05)
         self.log("val_loss", loss, prog_bar=True)
         return loss
 

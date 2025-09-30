@@ -13,7 +13,9 @@ import torch.nn.functional as F
 
 class CreativityRankingDataset(Dataset):
     def __init__(self, csv_file, tokenizer_name="bert-large-uncased", max_length=128):
-        self.data = pd.read_csv(csv_file)
+        df = pd.read_csv(csv_file, header=0)
+        self.data = df[df['preference_label'] != 0].reset_index(drop=True)
+
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
         self.max_length = max_length
 
@@ -23,9 +25,9 @@ class CreativityRankingDataset(Dataset):
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
 
-        question = str(row[0])
-        r1 = str(row[1])
-        r2 = str(row[2])
+        question = str(row["prompt"])
+        r1 = str(row["response1"])
+        r2 = str(row["reponse2"])
 
         q_inputs = self.tokenizer(question, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
         r1_inputs = self.tokenizer(r1, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")

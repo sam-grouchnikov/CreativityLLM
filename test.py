@@ -73,14 +73,6 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
     print("Min, max: ", preds_min, preds_max)
     preds_norm = (preds - preds_min) / (preds_max - preds_min + 1e-8)
 
-    # Print a few samples
-    print("\nSample predictions (normalized) vs targets:")
-    for i in range(min(10, len(preds_norm))):
-        print(f"{i:2d}: pred_norm={preds_norm[i]:.4f} | target={targets[i]:.4f}")
-
-    for i in range(min(20, len(preds))):  # only show first 10 to avoid spam
-        print(f"Pred: {preds[i]:.4f} | Actual: {targets[i]:.4f}")
-
     pearson_corr = pearsonr(preds, targets)[0]
     spearman_corr = spearmanr(preds, targets)[0]
     print(f"Pearson correlation: {pearson_corr:.4f}")
@@ -93,4 +85,5 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
     plt.title(f"Predicted vs Actual (r={pearson_corr:.2f}, rho={spearman_corr:.2f})")
     plt.grid(True)
     plt.show()
+    plt.savefig("pred_vs_actual.png")
     return pearson_corr

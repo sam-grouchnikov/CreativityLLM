@@ -58,7 +58,7 @@ class PolyEncoder(nn.Module):
         score = self.reg_head(context_vec).squeeze(-1)  # [B]
 
         # Optional: constrain to [0,1]
-        score = torch.sigmoid(score)
+        # score = torch.sigmoid(score)
         return score
 
 class CreativityRanker2(pl.LightningModule):

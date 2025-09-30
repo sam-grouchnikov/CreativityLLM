@@ -96,13 +96,23 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
     df.to_csv("pred_vs_actual_perprompt.csv", index=False)
 
     # Plot with color per prompt
-    plt.figure(figsize=(7, 7))
-    colors = pd.factorize(df["question"])[0]
-    plt.scatter(df["target"], df["pred_norm"], c=colors, cmap="tab20", alpha=0.6)
+    plt.figure(figsize=(8, 8))
+    unique_questions, colors = pd.factorize(df["question"])
+    scatter = plt.scatter(df["target"], df["pred_norm"], c=colors, cmap="tab20", alpha=0.6)
     plt.xlabel("Actual scores")
     plt.ylabel("Predicted scores (per-prompt normalized)")
     plt.title(f"Predicted vs Actual (r={pearson_corr:.2f}, rho={spearman_corr:.2f})")
     plt.grid(True)
-    plt.show()
-    plt.savefig("pred_vs_actual.png")
+
+    # Create legend mapping color to question
+    handles = []
+    labels = []
+    for i, q in enumerate(df["question"].unique()):
+        handles.append(plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=plt.cm.tab20(i % 20), markersize=8))
+        labels.append(q)
+    plt.legend(handles, labels, bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8, title="Questions")
+
+    plt.tight_layout()
+    plt.savefig("pred_vs_actual_perprompt.png", dpi=150, bbox_inches="tight")
+    plt.close()
     return pearson_corr

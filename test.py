@@ -65,7 +65,7 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
             scores = model.model(q_input, r_input)  # PolyEncoder returns single score
             preds.append(scores.cpu())
             targets.append(batch["score"].cpu())
-            questions.extend(batch["question_text"])  # <--- raw question text
+            questions.extend(batch["question_input"])  # <--- raw question text
 
     preds = torch.cat(preds).numpy()
     targets = torch.cat(targets).numpy()

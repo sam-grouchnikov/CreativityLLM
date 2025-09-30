@@ -113,7 +113,8 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
         handles.append(plt.Line2D([0], [0], marker='o', color='w',
                                   markerfacecolor=plt.cm.tab20(i % 20), markersize=8))
         labels.append(q)
-    plt.legend(handles, labels, bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8, title="Questions")
+    plt.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, -0.15),
+               ncol=2, fontsize=8, title="Questions")
 
     plt.tight_layout()
     plt.savefig("pred_vs_actual_perprompt.png", dpi=150, bbox_inches="tight")

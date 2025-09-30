@@ -56,7 +56,7 @@ class PolyEncoder(nn.Module):
         return score
 
 class CreativityRanker(pl.LightningModule):
-    def __init__(self, model_name="bert-large-uncased", poly_m=64, lr=2e-5):
+    def __init__(self, model_name="bert-large-uncased", poly_m=64, lr=2e-6):
         super().__init__()
         self.model = PolyEncoder(model_name, poly_m)
         self.lr = lr
@@ -73,14 +73,14 @@ class CreativityRanker(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         s1, s2 = self.forward(batch)
         label = batch['label'].float()
-        loss = F.margin_ranking_loss(s1, s2, label, margin=0.5)
+        loss = F.margin_ranking_loss(s1, s2, label, margin=0.2)
         self.log("train_loss", loss)
         return loss
 
     def validation_step(self, batch, batch_idx):
         s1, s2 = self.forward(batch)
         label = batch['label'].float()
-        loss = F.margin_ranking_loss(s1, s2, label, margin=0.5)
+        loss = F.margin_ranking_loss(s1, s2, label, margin=0.2)
         self.log("val_loss", loss, prog_bar=True)
         return loss
 

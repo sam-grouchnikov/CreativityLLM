@@ -76,7 +76,9 @@ class CreativityRanker2(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         s1 = self.forward(batch)
+        print(s1)
         label = batch['label'].float()
+        print(label)
         loss = self.loss_fn(s1, label)   # fixed usage
         self.log("train_loss", loss)
         return loss

@@ -12,7 +12,7 @@ import torch
 import torch.nn.functional as F
 
 class CreativityRankingDataset(Dataset):
-    def __init__(self, csv_file, tokenizer_name="bert-base-uncased", max_length=128):
+    def __init__(self, csv_file, tokenizer_name="bert-large-uncased", max_length=128):
         self.data = pd.read_csv(csv_file)
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
         self.max_length = max_length

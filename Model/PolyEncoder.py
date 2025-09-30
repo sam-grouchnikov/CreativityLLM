@@ -12,7 +12,7 @@ import torch
 import torch.nn.functional as F
 
 class PolyEncoder(nn.Module):
-    def __init__(self, model_name="bert-base-uncased", poly_m=64):
+    def __init__(self, model_name="bert-large-uncased", poly_m=64):
         super().__init__()
         self.encoder = AutoModel.from_pretrained(model_name)
         self.hidden_size = self.encoder.config.hidden_size
@@ -56,7 +56,7 @@ class PolyEncoder(nn.Module):
         return score
 
 class CreativityRanker(pl.LightningModule):
-    def __init__(self, model_name="bert-base-uncased", poly_m=64, lr=2e-5):
+    def __init__(self, model_name="bert-large-uncased", poly_m=64, lr=2e-5):
         super().__init__()
         self.model = PolyEncoder(model_name, poly_m)
         self.lr = lr
@@ -73,14 +73,14 @@ class CreativityRanker(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         s1, s2 = self.forward(batch)
         label = batch['label'].float()
-        loss = F.margin_ranking_loss(s1, s2, label, margin=0.2)
+        loss = F.margin_ranking_loss(s1, s2, label, margin=0.5)
         self.log("train_loss", loss)
         return loss
 
     def validation_step(self, batch, batch_idx):
         s1, s2 = self.forward(batch)
         label = batch['label'].float()
-        loss = F.margin_ranking_loss(s1, s2, label, margin=0.2)
+        loss = F.margin_ranking_loss(s1, s2, label, margin=0.5)
         self.log("val_loss", loss, prog_bar=True)
         return loss
 

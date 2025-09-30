@@ -47,20 +47,20 @@ def main():
 
     wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")
 
-    checkpoint_callback = ModelCheckpoint(
-        monitor="val_loss",  # metric to monitor
-        dirpath="/home/sam/checkpoints",  # directory to save checkpoints
-        filename="best-checkpoint-{epoch:02d}-{val_loss:.2f}",  # filename template
-        save_top_k=1,  # save only the best model
-        mode="min",  # 'min' because lower val_loss is better
-        save_weights_only=False  # set True to save only weights
-    )
+    # checkpoint_callback = ModelCheckpoint(
+    #     monitor="val_loss",  # metric to monitor
+    #     dirpath="/home/sam/checkpoints",  # directory to save checkpoints
+    #     filename="best-checkpoint-{epoch:02d}-{val_loss:.2f}",  # filename template
+    #     save_top_k=1,  # save only the best model
+    #     mode="min",  # 'min' because lower val_loss is better
+    #     save_weights_only=False  # set True to save only weights
+    # )
 
     trainer = pl.Trainer(
         max_epochs=epochs,
         accelerator="gpu",
         devices=devices,
-        callbacks=[checkpoint_callback],
+        # callbacks=[checkpoint_callback],
         precision="16",
         logger=wandb_logger,
         log_every_n_steps=5,

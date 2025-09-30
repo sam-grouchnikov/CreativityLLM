@@ -60,7 +60,6 @@ def main():
         max_epochs=epochs,
         accelerator="gpu",
         devices=devices,
-        callbacks=[checkpoint_callback],
         precision="16",
         logger=wandb_logger,
         log_every_n_steps=50,
@@ -69,7 +68,7 @@ def main():
 
     testPath = "/home/sam/datasets/TestData.csv"
 
-    correlation = computeCorrelation(model, testPath, batch, "bert-base-uncased", 128)
+    correlation = computeCorrelation(model, testPath, batch, "bert-large-uncased", 128)
 
     wandb_logger.log_metrics({"correlation": correlation})
 

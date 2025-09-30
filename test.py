@@ -85,7 +85,8 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
             return x * 0
         return (x - pmin) / (pmax - pmin)
 
-    df["pred_norm"] = df.groupby("question")["pred"].transform(normalize_group)
+    # df["pred_norm"] = df.groupby("question")["pred"].transform(normalize_group)
+    df["pred_norm"] = df["pred"]
 
     pearson_corr = pearsonr(df["pred_norm"], df["target"])[0]
     spearman_corr = spearmanr(df["pred_norm"], df["target"])[0]

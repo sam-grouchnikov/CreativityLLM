@@ -27,7 +27,7 @@ class CreativityRankingDataset(Dataset):
 
         question = str(row["prompt"])
         r1 = str(row["response1"])
-        r2 = str(row["reponse2"])
+        r2 = str(row["response2"])
 
         q_inputs = self.tokenizer(question, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
         r1_inputs = self.tokenizer(r1, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")

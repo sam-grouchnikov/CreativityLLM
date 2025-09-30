@@ -4,9 +4,11 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader
 from transformers import AutoTokenizer
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, spearmanr
 import pandas as pd
 from scipy.special import expit
+import matplotlib.pyplot as plt
+
 
 class CorrelationDataset(Dataset):
     def __init__(self, csv_file, tokenizer_name="bert-base-uncased", max_length=128):
@@ -80,5 +82,15 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
         print(f"Pred: {preds[i]:.4f} | Actual: {targets[i]:.4f}")
 
     pearson_corr = pearsonr(preds, targets)[0]
+    spearman_corr = spearmanr(preds, targets)[0]
     print(f"Pearson correlation: {pearson_corr:.4f}")
+    print(f"Spearman correlation: {spearman_corr:.4f}")
+
+    plt.figure(figsize=(6, 6))
+    plt.scatter(targets, preds_norm, alpha=0.6)
+    plt.xlabel("Actual scores")
+    plt.ylabel("Predicted scores (normalized)")
+    plt.title(f"Predicted vs Actual (r={pearson_corr:.2f}, rho={spearman_corr:.2f})")
+    plt.grid(True)
+    plt.show()
     return pearson_corr

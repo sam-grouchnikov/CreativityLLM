@@ -103,7 +103,6 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
     plt.ylabel("Predicted scores (per-prompt normalized)")
     plt.title(f"Predicted vs Actual (r={pearson_corr:.2f}, rho={spearman_corr:.2f})")
     plt.grid(True)
-    plt.savefig("pred_vs_actual_perprompt.png", dpi=150, bbox_inches="tight")
-    plt.close()
-
+    plt.show()
+    plt.savefig("pred_vs_actual.png")
     return pearson_corr

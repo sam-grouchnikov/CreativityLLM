@@ -23,7 +23,7 @@ from test import computeCorrelation
 def main():
 
     batch = 128
-    epochs = 1
+    epochs = 10
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
 
@@ -41,7 +41,7 @@ def main():
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
-    for layer in model.model.encoder.encoder.layer[-1:]:
+    for layer in model.model.encoder.encoder.layer[-5:]:
         for param in layer.parameters():
             param.requires_grad = True
 

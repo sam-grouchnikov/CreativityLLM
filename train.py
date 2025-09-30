@@ -20,8 +20,8 @@ from test import computeCorrelation
 
 def main():
 
-    batch = 128
-    epochs = 1
+    batch = 64
+    epochs = 2
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
 
@@ -51,7 +51,8 @@ def main():
         devices=devices,
         precision="16",
         logger=wandb_logger,
-        log_every_n_steps=50
+        log_every_n_steps=50,
+        val_check_interval=0.1
     )
     trainer.fit(model, train_loader, val_loader)
 

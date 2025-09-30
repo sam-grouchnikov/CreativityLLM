@@ -9,6 +9,8 @@ import torch.nn as nn
 from transformers import AutoModel
 import lightning as pl
 from torch.utils.data import DataLoader, random_split
+from lightning.pytorch.callbacks import ModelCheckpoint
+
 
 import torch
 import torch.nn.functional as F
@@ -20,8 +22,8 @@ from test import computeCorrelation
 
 def main():
 
-    batch = 64
-    epochs = 2
+    batch = 128
+    epochs = 1
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
 
@@ -45,14 +47,23 @@ def main():
 
     wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")
 
+    checkpoint_callback = ModelCheckpoint(
+        monitor="val_loss",  # metric to monitor
+        dirpath="/home/sam/checkpoints",  # directory to save checkpoints
+        filename="best-checkpoint-{epoch:02d}-{val_loss:.2f}",  # filename template
+        save_top_k=1,  # save only the best model
+        mode="min",  # 'min' because lower val_loss is better
+        save_weights_only=False  # set True to save only weights
+    )
+
     trainer = pl.Trainer(
         max_epochs=epochs,
         accelerator="gpu",
         devices=devices,
+        callbacks=[checkpoint_callback],
         precision="16",
         logger=wandb_logger,
         log_every_n_steps=50,
-        val_check_interval=0.1
     )
     trainer.fit(model, train_loader, val_loader)
 

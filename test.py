@@ -47,11 +47,12 @@ class CorrelationDataset(Dataset):
 def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=128):
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
     dataset = CorrelationDataset(csv_path, tokenizer_name, max_length=max_length)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle = False)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
     model.eval()
     preds = []
     targets = []
+    questions = []  # keep raw question text
 
     device = "cuda"
     model.to(device)
@@ -64,29 +65,49 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
             scores = model.model(q_input, r_input)  # PolyEncoder returns single score
             preds.append(scores.cpu())
             targets.append(batch["score"].cpu())
+            questions.extend(batch["question_text"])  # <--- raw question text
 
     preds = torch.cat(preds).numpy()
     targets = torch.cat(targets).numpy()
 
-    preds_min = preds.min()
-    preds_max = preds.max()
-    print("Min, max: ", preds_min, preds_max)
-    preds_norm = (preds - preds_min) / (preds_max - preds_min + 1e-8)
+    # Put everything in a DataFrame for easier per-prompt operations
+    df = pd.DataFrame({
+        "question": questions,
+        "pred": preds,
+        "target": targets,
+    })
 
-    pearson_corr = pearsonr(preds, targets)[0]
-    spearman_corr = spearmanr(preds, targets)[0]
-    print(f"Pearson correlation: {pearson_corr:.4f}")
-    print(f"Spearman correlation: {spearman_corr:.4f}")
+    # Normalize predictions within each question group
+    def normalize_group(x):
+        pmin, pmax = x.min(), x.max()
+        if abs(pmax - pmin) < 1e-8:
+            return x * 0  # flat predictions, normalize to 0
+        return (x - pmin) / (pmax - pmin)
 
-    plt.figure(figsize=(6, 6))
-    colors = dataset.data.iloc[:, 0].astype("category").cat.codes  # first column = question text
-    plt.scatter(targets, preds_norm, c=colors, cmap="tab20", alpha=0.6)
+    df["pred_norm"] = df.groupby("question")["pred"].transform(normalize_group)
+
+    # Compute correlations using normalized scores
+    pearson_corr = pearsonr(df["pred_norm"], df["target"])[0]
+    spearman_corr = spearmanr(df["pred_norm"], df["target"])[0]
+
+    print(f"Pearson correlation (per-prompt normalized): {pearson_corr:.4f}")
+    print(f"Spearman correlation (per-prompt normalized): {spearman_corr:.4f}")
+
+    # Save CSV for inspection
+    df.to_csv("pred_vs_actual_perprompt.csv", index=False)
+
+    # --- Plotting ---
+    plt.figure(figsize=(7, 7))
+    # assign each unique question a color
+    colors = pd.factorize(df["question"])[0]
+    plt.scatter(df["target"], df["pred_norm"], c=colors, cmap="tab20", alpha=0.6)
     plt.xlabel("Actual scores")
-    plt.ylabel("Predicted scores (normalized)")
+    plt.ylabel("Predicted scores (per-prompt normalized)")
     plt.title(f"Predicted vs Actual (r={pearson_corr:.2f}, rho={spearman_corr:.2f})")
     plt.grid(True)
-    plt.savefig("pred_vs_actual.png")  # save BEFORE plt.show()
-    plt.show()
 
-    plt.savefig("pred_vs_actual.png")
+    # Save instead of show (since SSH won't display)
+    plt.savefig("pred_vs_actual_perprompt.png", dpi=150, bbox_inches="tight")
+    plt.close()
+
     return pearson_corr

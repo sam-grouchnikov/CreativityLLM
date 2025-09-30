@@ -22,7 +22,7 @@ from test import computeCorrelation
 
 def main():
 
-    batch = 128
+    batch = 32
     epochs = 20
     devices = torch.cuda.device_count()
     pl.seed_everything(42)

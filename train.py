@@ -51,8 +51,7 @@ def main():
         devices=devices,
         precision="16",
         logger=wandb_logger,
-        log_every_n_steps=50,
-        val_check_interval=1
+        log_every_n_steps=50
     )
     trainer.fit(model, train_loader, val_loader)
 

@@ -14,7 +14,7 @@ import torch.nn.functional as F
 class CreativityRankingDataset(Dataset):
     def __init__(self, csv_file, tokenizer_name="bert-large-uncased", max_length=128):
         df = pd.read_csv(csv_file, header=0)
-        self.data = df[df['label'] != 0].reset_index(drop=True)
+        self.data = df[df['label'] != 0.0 and df['label'] != -0.0].reset_index(drop=True)
 
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
         self.max_length = max_length
@@ -40,5 +40,5 @@ class CreativityRankingDataset(Dataset):
             "question_input": {k: v.squeeze(0) for k, v in q_inputs.items()},
             "response_1_input": {k: v.squeeze(0) for k, v in r1_inputs.items()},
             "response_2_input": {k: v.squeeze(0) for k, v in r2_inputs.items()},
-            "label": torch.tensor(label, dtype=torch.long)
+            "label": torch.tensor(row_label, dtype=torch.long)
         }

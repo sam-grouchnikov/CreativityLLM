@@ -20,6 +20,8 @@ class PolyEncoder(nn.Module):
 
         # Learnable poly codes
         self.poly_codes = nn.Embedding(poly_m, self.hidden_size)
+        self.reg_head = nn.Linear(self.hidden_size, 1)  # maps embedding -> scalar
+
 
         # Init poly-code indices
         self.register_buffer("poly_code_ids", torch.arange(poly_m))
@@ -52,7 +54,11 @@ class PolyEncoder(nn.Module):
         context_vec = torch.bmm(attn_weights.unsqueeze(1), q_vecs).squeeze(1)  # [B, H]
 
         # Dot-product similarity
-        score = torch.sum(context_vec * r_vec, dim=-1)  # [B]
+        # Pass through regression head
+        score = self.reg_head(context_vec).squeeze(-1)  # [B]
+
+        # Optional: constrain to [0,1]
+        score = torch.sigmoid(score)
         return score
 
 class CreativityRanker2(pl.LightningModule):

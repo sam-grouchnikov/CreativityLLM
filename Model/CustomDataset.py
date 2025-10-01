@@ -12,7 +12,7 @@ import torch
 import torch.nn.functional as F
 
 class CreativityRankingDataset(Dataset):
-    def __init__(self, csv_file, tokenizer_name="bert-large-uncased", max_length=128):
+    def __init__(self, csv_file, tokenizer_name="bert-base-uncased", max_length=128):
         df = pd.read_csv(csv_file, header=0)
         self.data = df[df['label'] != 0.0].reset_index(drop=True)
 

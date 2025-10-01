@@ -22,7 +22,7 @@ from test import computeCorrelation
 
 def main():
 
-    batch = 64
+    batch = 256
     epochs = 1
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
@@ -68,7 +68,7 @@ def main():
 
     testPath = "/home/sam/datasets/TestData.csv"
 
-    correlation = computeCorrelation(model, testPath, batch, "bert-large-uncased", 128)
+    correlation = computeCorrelation(model, testPath, batch, "bert-base-uncased", 128)
 
     wandb_logger.log_metrics({"correlation": correlation})
 

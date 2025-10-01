@@ -63,7 +63,7 @@ def main():
         precision="16",
         logger=wandb_logger,
         log_every_n_steps=50,
-        val_check_interval=0.1,
+        val_check_interval=0.25,
     )
     trainer.fit(model, train_loader, val_loader)
 

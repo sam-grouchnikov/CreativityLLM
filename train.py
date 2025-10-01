@@ -22,7 +22,7 @@ from test import computeCorrelation
 
 def main():
 
-    batch = 128
+    batch = 64
     epochs = 1
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
@@ -63,6 +63,7 @@ def main():
         precision="16",
         logger=wandb_logger,
         log_every_n_steps=50,
+        accumulate_grad_batches=4
     )
     trainer.fit(model, train_loader, val_loader)
 

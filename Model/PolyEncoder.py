@@ -10,6 +10,8 @@ from transformers import AutoModel
 import lightning as pl
 import torch
 import torch.nn.functional as F
+from transformers import AdamW, get_scheduler
+
 
 class PolyEncoder(nn.Module):
     def __init__(self, model_name="bert-large-uncased", poly_m=64):
@@ -85,4 +87,21 @@ class CreativityRanker(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        return torch.optim.AdamW(self.parameters(), lr=self.lr)
+        optimizer = AdamW(self.parameters(), lr=self.learning_rate)
+
+        WARMUP_STEPS = int(0.1 * self.total_steps)
+
+        lr_scheduler = get_scheduler(
+            name="cosine",  # Use cosine annealing
+            optimizer=optimizer,
+            num_warmup_steps=WARMUP_STEPS,
+            num_training_steps=10957,
+        )
+
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": lr_scheduler,
+                "interval": "step",
+            }
+        }

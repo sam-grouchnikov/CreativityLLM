@@ -87,7 +87,7 @@ class CreativityRanker(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        optimizer = AdamW(self.parameters(), lr=self.learning_rate)
+        optimizer = AdamW(self.parameters(), lr=self.lr)
 
         WARMUP_STEPS = int(0.1 * self.total_steps)
 

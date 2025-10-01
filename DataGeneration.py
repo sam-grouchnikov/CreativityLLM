@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 import csv
 
 # Load SCTT file
-df = pd.read_csv("C:\\Users\\samgr\\PycharmProjects\\CreativityLLM\\sctt.csv", header=0)
+df = pd.read_csv("C:\\Users\\samgr\\PycharmProjects\\CreativityLLM\\Filtered.csv", header=0)
 
 # Clean column names and select relevant columns
 df.columns = df.columns.str.strip()

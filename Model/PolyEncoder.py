@@ -89,7 +89,7 @@ class CreativityRanker(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = AdamW(self.parameters(), lr=self.lr)
 
-        WARMUP_STEPS = int(0.1 * self.total_steps)
+        WARMUP_STEPS = int(0.1 * 10957)
 
         lr_scheduler = get_scheduler(
             name="cosine",  # Use cosine annealing

@@ -40,5 +40,5 @@ class CreativityRankingDataset(Dataset):
             "question_input": {k: v.squeeze(0) for k, v in q_inputs.items()},
             "response_1_input": {k: v.squeeze(0) for k, v in r1_inputs.items()},
             "response_2_input": {k: v.squeeze(0) for k, v in r2_inputs.items()},
-            "label": torch.tensor(row_label, dtype=torch.long)
+            "label": torch.tensor(label, dtype=torch.long)
         }

@@ -83,6 +83,11 @@ class CreativityRanker2(pl.LightningModule):
         self.log("train_loss", loss)
         return loss
 
+    def on_validation_epoch_start(self):
+        # Clear buffers at the start of the epoch
+        self.val_preds = []
+        self.val_labels = []
+
     def validation_step(self, batch, batch_idx):
         pred = self.model(batch['question_input'], batch['response_input'])  # [B]
         label = batch['label'].float()
@@ -90,19 +95,26 @@ class CreativityRanker2(pl.LightningModule):
         loss = F.l1_loss(pred, label)
         self.log("val_loss", loss, prog_bar=True)
 
-        return {"preds": pred.detach().cpu(), "labels": label.detach().cpu()}
+        # Store for epoch-level metrics
+        self.val_preds.append(pred.detach().cpu())
+        self.val_labels.append(label.detach().cpu())
+        return loss
 
-    def on_validation_epoch_end(self, outputs):
-        preds = torch.cat([o["preds"] for o in outputs]).numpy()
-        labels = torch.cat([o["labels"] for o in outputs]).numpy()
+    def on_validation_epoch_end(self):
+        # Concatenate all batches
+        preds = torch.cat(self.val_preds).numpy()
+        labels = torch.cat(self.val_labels).numpy()
 
-        # Pearson correlation
+        from scipy.stats import pearsonr, spearmanr
         pearson_corr, _ = pearsonr(preds, labels)
-        # Spearman correlation (rank-based)
         spearman_corr, _ = spearmanr(preds, labels)
 
         self.log("val_pearson", pearson_corr, prog_bar=True)
         self.log("val_spearman", spearman_corr, prog_bar=True)
+
+        # Optionally clear after logging
+        self.val_preds = []
+        self.val_labels = []
 
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.lr)

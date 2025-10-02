@@ -43,7 +43,7 @@ class CorrelationDataset(Dataset):
         return {
             "question_input": {k: v.squeeze(0) for k, v in q_enc.items()},
             "response_input": {k: v.squeeze(0) for k, v in r_enc.items()},
-            "score": torch.tensor(row["se"], dtype=torch.float),
+            "score": torch.tensor(row["score"], dtype=torch.float),
             "question_text": question_text
         }
 

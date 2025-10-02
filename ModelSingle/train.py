@@ -72,7 +72,7 @@ def main():
     )
     trainer.fit(model, train_loader, val_loader)
 
-    testPath = "/home/sam/datasets/Filtered.csv"
+    testPath = "/home/sam/datasets/TestData.csv"
 
     correlation = computeCorrelation(model, testPath, batch, tokenizer, 128)
 

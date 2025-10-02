@@ -78,21 +78,12 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
         "target": targets,
     })
 
-    # Per-question normalization
-    def normalize_group(x):
-        pmin, pmax = x.min(), x.max()
-        if abs(pmax - pmin) < 1e-8:
-            return x * 0
-        return (x - pmin) / (pmax - pmin)
 
-    # df["pred_norm"] = df.groupby("question")["pred"].transform(normalize_group)
-    df["pred_norm"] = df["pred"]
+    pearson_corr = pearsonr(df["pred"], df["target"])[0]
+    spearman_corr = spearmanr(df["pred"], df["target"])[0]
 
-    pearson_corr = pearsonr(df["pred_norm"], df["target"])[0]
-    spearman_corr = spearmanr(df["pred_norm"], df["target"])[0]
-
-    print(f"Pearson correlation (per-prompt normalized): {pearson_corr:.4f}")
-    print(f"Spearman correlation (per-prompt normalized): {spearman_corr:.4f}")
+    print(f"Pearson correlation: {pearson_corr:.4f}")
+    print(f"Spearman correlation: {spearman_corr:.4f}")
 
     df.to_csv("pred_vs_actual_perprompt.csv", index=False)
 
@@ -101,7 +92,7 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
     color_codes, uniques = pd.factorize(df["question"])
 
     plt.figure(figsize=(8, 8))
-    scatter = plt.scatter(df["target"], df["pred_norm"], c=color_codes, cmap="tab20", alpha=0.6)
+    scatter = plt.scatter(df["target"], df["pred"], c=color_codes, cmap="tab20", alpha=0.6)
     plt.xlabel("Actual scores")
     plt.ylabel("Predicted scores (per-prompt normalized)")
     plt.title(f"Predicted vs Actual (r={pearson_corr:.2f}, rho={spearman_corr:.2f})")

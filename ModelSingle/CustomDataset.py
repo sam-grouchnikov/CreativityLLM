@@ -12,7 +12,7 @@ import torch
 import torch.nn.functional as F
 
 class CreativityRankingDataset2(Dataset):
-    def __init__(self, csv_file, tokenizer_name="bert-base-uncased", max_length=128):
+    def __init__(self, csv_file, tokenizer_name="bert-large-uncased", max_length=128):
         self.data = pd.read_csv(csv_file, header=0).fillna("")
         self.data["prompt"] = self.data["prompt"].astype(str)
         self.data["response"] = self.data["response"].astype(str)

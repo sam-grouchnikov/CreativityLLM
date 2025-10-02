@@ -12,7 +12,7 @@ import torch
 import torch.nn.functional as F
 
 class PolyEncoder(nn.Module):
-    def __init__(self, model_name="bert-base-uncased", poly_m=64):
+    def __init__(self, model_name="bert-large-uncased", poly_m=64):
         super().__init__()
         self.encoder = AutoModel.from_pretrained(model_name)
         self.hidden_size = self.encoder.config.hidden_size
@@ -62,7 +62,7 @@ class PolyEncoder(nn.Module):
         return score
 
 class CreativityRanker2(pl.LightningModule):
-    def __init__(self, model_name="bert-base-uncased", poly_m=128, lr=6e-7):
+    def __init__(self, model_name="bert-large-uncased", poly_m=128, lr=6e-7):
         super().__init__()
         self.model = PolyEncoder(model_name, poly_m)
         self.lr = lr

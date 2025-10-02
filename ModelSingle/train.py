@@ -22,7 +22,7 @@ from test import computeCorrelation
 
 def main():
 
-    batch = 64
+    batch = 16
     epochs = 30
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
@@ -41,7 +41,7 @@ def main():
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
-    for layer in model.model.encoder.encoder.layer[-6:]:
+    for layer in model.model.encoder.encoder.layer[-18:]:
         for param in layer.parameters():
             param.requires_grad = True
 
@@ -69,7 +69,7 @@ def main():
 
     testPath = "/home/sam/datasets/Filtered.csv"
 
-    correlation = computeCorrelation(model, testPath, batch, "bert-base-uncased", 128)
+    correlation = computeCorrelation(model, testPath, batch, "bert-large-uncased", 128)
 
     wandb_logger.log_metrics({"correlation": correlation})
 

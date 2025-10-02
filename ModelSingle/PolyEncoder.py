@@ -64,7 +64,7 @@ class PolyEncoder(nn.Module):
         return score
 
 class CreativityRanker2(pl.LightningModule):
-    def __init__(self, model_name, poly_m=128, lr=6e-7):
+    def __init__(self, model_name, poly_m=128, lr=2e-7):
         super().__init__()
         self.model = PolyEncoder(model_name, poly_m)
         self.lr = lr
@@ -80,7 +80,7 @@ class CreativityRanker2(pl.LightningModule):
         label = batch['label'].float()
 
         loss = F.l1_loss(pred, label)
-        self.log("train_loss", loss)
+        self.log("train_loss", loss, prog_bar=True)
         return loss
 
     def on_validation_epoch_start(self):

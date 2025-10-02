@@ -25,7 +25,7 @@ from test import computeCorrelation
 def main():
 
     batch = 4
-    epochs = 30
+    epochs = 5
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
     tokenizer = "microsoft/deberta-v3-large"

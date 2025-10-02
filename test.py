@@ -21,7 +21,7 @@ class CorrelationDataset(Dataset):
 
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
-        question_text = row["question"]
+        question_text = row["prompt"]
         response_text = row["response"]
 
         q_enc = self.tokenizer(

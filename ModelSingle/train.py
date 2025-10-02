@@ -28,6 +28,7 @@ def main():
     epochs = 30
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
+    tokenizer = "microsoft/deberta-v3-large"
 
 
 
@@ -39,7 +40,7 @@ def main():
     train_loader = DataLoader(train_dataset, batch_size=batch, shuffle=True, num_workers=15)
     val_loader = DataLoader(val_dataset, batch_size=batch, shuffle=False, num_workers=15)
 
-    model = CreativityRanker2()
+    model = CreativityRanker2(tokenizer)
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
@@ -71,7 +72,7 @@ def main():
 
     testPath = "/home/sam/datasets/Filtered.csv"
 
-    correlation = computeCorrelation(model, testPath, batch, "bert-large-uncased", 128)
+    correlation = computeCorrelation(model, testPath, batch, tokenizer, 128)
 
     wandb_logger.log_metrics({"correlation": correlation})
 

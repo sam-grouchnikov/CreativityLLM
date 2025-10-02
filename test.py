@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 
 class CorrelationDataset(Dataset):
-    def __init__(self, csv_file, tokenizer_name="bert-base-uncased", max_length=128):
+    def __init__(self, csv_file, tokenizer_name="microsoft/deberta-v3-large", max_length=128):
         self.data = pd.read_csv(csv_file)
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
         self.max_length = max_length
@@ -21,8 +21,8 @@ class CorrelationDataset(Dataset):
 
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
-        question_text = row[0]
-        response_text = row[1]
+        question_text = row["question"]
+        response_text = row["response"]
 
         q_enc = self.tokenizer(
             question_text,
@@ -43,7 +43,7 @@ class CorrelationDataset(Dataset):
         return {
             "question_input": {k: v.squeeze(0) for k, v in q_enc.items()},
             "response_input": {k: v.squeeze(0) for k, v in r_enc.items()},
-            "score": torch.tensor(row[2], dtype=torch.float),
+            "score": torch.tensor(row["se"], dtype=torch.float),
             "question_text": question_text
         }
 

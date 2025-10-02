@@ -95,10 +95,7 @@ class CreativityRanker2(pl.LightningModule):
         self.val_labels = []
 
     def forward(self, batch):
-        # Get scores from polyencoder
-        score_vec = self.model(batch['question_input'], batch['response_input'])  # [B, hidden_size]
-        score_vec = self.dropout(score_vec)  # [B, hidden_size]
-        pred = self.regression_head(score_vec).squeeze(-1)  # [B]
+        pred = self.model(batch['question_input'], batch['response_input'])
 
         return pred
 

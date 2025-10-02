@@ -64,7 +64,7 @@ class PolyEncoder(nn.Module):
         return score
 
 class CreativityRanker2(pl.LightningModule):
-    def __init__(self, model_name, poly_m=128, lr=9e-8):
+    def __init__(self, model_name, poly_m=128, lr=3e-8):
         super().__init__()
         self.model = PolyEncoder(model_name, poly_m)
         self.lr = lr

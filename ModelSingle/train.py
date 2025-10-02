@@ -28,7 +28,7 @@ def main():
     epochs = 15
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "microsoft/deberta-v3-base"
+    tokenizer = "microsoft/deberta-v3-large"
 
 
 
@@ -44,7 +44,7 @@ def main():
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
-    for layer in model.model.encoder.encoder.layer[-6:]:
+    for layer in model.model.encoder.encoder.layer[-12:]:
         for param in layer.parameters():
             param.requires_grad = True
 

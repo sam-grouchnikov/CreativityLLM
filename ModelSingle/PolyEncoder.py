@@ -64,7 +64,7 @@ class PolyEncoder(nn.Module):
         return score
 
 class CreativityRanker2(pl.LightningModule):
-    def __init__(self, model_name, poly_m=128, lr=2e-7):
+    def __init__(self, model_name, poly_m=128, lr=9e-8):
         super().__init__()
         self.model = PolyEncoder(model_name, poly_m)
         self.lr = lr
@@ -74,7 +74,7 @@ class CreativityRanker2(pl.LightningModule):
         q_input = batch['question_input']
         r_input = batch['response_input']   # fixed variable name
         score = self.model(q_input, r_input)
-        self.dropout = nn.Dropout(0.1)
+        self.dropout = nn.Dropout(0.2)
         x=self.dropout(score)
         pred = self.regression_head(x)
         return pred

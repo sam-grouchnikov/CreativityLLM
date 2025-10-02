@@ -81,22 +81,16 @@ class PolyEncoder(nn.Module):
         return score.squeeze(-1)  # [B]
 
 class CreativityRanker2(pl.LightningModule):
-    def __init__(self, model_name, poly_m=64, lr=3e-5, dropout_prob=0.2):
+    def __init__(self, model_name, poly_m=64, lr=3e-5):
         super().__init__()
         self.model = PolyEncoder(model_name, poly_m)
         self.lr = lr
-        self.dropout = nn.Dropout(dropout_prob)
 
-        # Optional regression head after dropout
-        self.regression_head = nn.Linear(self.model.hidden_size, 1)
-
-        # Buffers for validation
         self.val_preds = []
         self.val_labels = []
 
     def forward(self, batch):
         pred = self.model(batch['question_input'], batch['response_input'])
-
         return pred
 
     def training_step(self, batch, batch_idx):
@@ -112,7 +106,6 @@ class CreativityRanker2(pl.LightningModule):
         loss = F.smooth_l1_loss(pred, label)
         self.log("val_loss", loss, prog_bar=True)
 
-        # Store for epoch-level metrics
         self.val_preds.append(pred.detach().cpu())
         self.val_labels.append(label.detach().cpu())
         return loss
@@ -127,7 +120,6 @@ class CreativityRanker2(pl.LightningModule):
         self.log("val_pearson", pearson_corr, prog_bar=True)
         self.log("val_spearman", spearman_corr, prog_bar=True)
 
-        # clear buffers
         self.val_preds = []
         self.val_labels = []
 

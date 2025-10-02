@@ -23,13 +23,13 @@ class CreativityRankingDataset2(Dataset):
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
 
-        question = str(row[5])
-        r = str(row[6])
+        question = str(row["prompt"])
+        r = str(row["response"])
 
         q_inputs = self.tokenizer(question, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
         r_inputs = self.tokenizer(r, truncation=True, padding='max_length', max_length=self.max_length, return_tensors="pt")
 
-        row_label = float(row[8])
+        row_label = float(row["se"])
 
         return {
             "question_input": {k: v.squeeze(0) for k, v in q_inputs.items()},

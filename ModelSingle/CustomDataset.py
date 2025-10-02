@@ -2,7 +2,7 @@ import torch
 from lightning.pytorch.loggers import WandbLogger
 from lightning.pytorch.strategies import DDPStrategy
 from torch.utils.data import Dataset, DataLoader
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, DebertaV2Tokenizer
 import pandas as pd
 import torch
 import torch.nn as nn
@@ -18,7 +18,7 @@ class CreativityRankingDataset2(Dataset):
         self.data["prompt"] = self.data["prompt"].astype(str)
         self.data["response"] = self.data["response"].astype(str)
 
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+        self.tokenizer = DebertaV2Tokenizer.from_pretrained(tokenizer_name)
         self.max_length = max_length
 
     def __len__(self):

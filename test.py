@@ -3,7 +3,7 @@ from transformers import AutoTokenizer
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, DebertaV2Tokenizer, DebertaV2TokenizerFast
 from scipy.stats import pearsonr, spearmanr
 import pandas as pd
 from scipy.special import expit
@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 class CorrelationDataset(Dataset):
     def __init__(self, csv_file, tokenizer_name="microsoft/deberta-v3-large", max_length=128):
         self.data = pd.read_csv(csv_file)
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+        self.tokenizer = DebertaV2Tokenizer.from_pretrained(tokenizer_name)
         self.max_length = max_length
 
     def __len__(self):

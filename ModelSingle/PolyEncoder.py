@@ -68,18 +68,22 @@ class CreativityRanker2(pl.LightningModule):
         super().__init__()
         self.model = PolyEncoder(model_name, poly_m)
         self.lr = lr
+        self.regression_head = nn.Linear(self.model.hidden_size, 1)
 
     def forward(self, batch):
         q_input = batch['question_input']
         r_input = batch['response_input']   # fixed variable name
         score = self.model(q_input, r_input)
-        return score
+        self.dropout = nn.Dropout(0.1)
+        x=self.dropout(score)
+        pred = self.regression_head(x)
+        return pred
 
     def training_step(self, batch, batch_idx):
         pred = self.model(batch['question_input'], batch['response_input'])
         label = batch['label'].float()
 
-        loss = F.l1_loss(pred, label)
+        loss = F.smooth_l1_loss(pred, label)
         self.log("train_loss", loss, prog_bar=True)
         return loss
 
@@ -92,7 +96,7 @@ class CreativityRanker2(pl.LightningModule):
         pred = self.model(batch['question_input'], batch['response_input'])  # [B]
         label = batch['label'].float()
 
-        loss = F.l1_loss(pred, label)
+        loss = F.smooth_l1_loss(pred, label)
         self.log("val_loss", loss, prog_bar=True)
 
         # Store for epoch-level metrics

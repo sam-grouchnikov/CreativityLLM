@@ -29,7 +29,7 @@ def main():
 
 
 
-    dataset = CreativityRankingDataset2("/home/sam/datasets/sctt.csv")
+    dataset = CreativityRankingDataset2("/home/sam/datasets/Filtered.csv")
     train_size = int(0.875 * len(dataset))
     val_size = len(dataset) - train_size
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
@@ -41,7 +41,7 @@ def main():
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
-    for layer in model.model.encoder.encoder.layer[-5:]:
+    for layer in model.model.encoder.encoder.layer[-6:]:
         for param in layer.parameters():
             param.requires_grad = True
 
@@ -64,10 +64,11 @@ def main():
         precision="16",
         logger=wandb_logger,
         log_every_n_steps=5,
+        val_check_interval=1,
     )
     trainer.fit(model, train_loader, val_loader)
 
-    testPath = "/home/sam/datasets/TestData.csv"
+    testPath = "/home/sam/datasets/Filtered.csv"
 
     correlation = computeCorrelation(model, testPath, batch, "bert-base-uncased", 128)
 

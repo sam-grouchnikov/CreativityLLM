@@ -62,11 +62,11 @@ class PolyEncoder(nn.Module):
         return score
 
 class CreativityRanker2(pl.LightningModule):
-    def __init__(self, model_name="bert-base-uncased", poly_m=64, lr=2e-5):
+    def __init__(self, model_name="bert-base-uncased", poly_m=128, lr=2e-5):
         super().__init__()
         self.model = PolyEncoder(model_name, poly_m)
         self.lr = lr
-        self.loss_fn = nn.MSELoss()
+        self.loss_fn = F.l1_loss()
 
     def forward(self, batch):
         q_input = batch['question_input']
@@ -75,18 +75,18 @@ class CreativityRanker2(pl.LightningModule):
         return score
 
     def training_step(self, batch, batch_idx):
-        s1 = self.forward(batch)
-        print(s1)
+        pred = self.model(batch['question_input'], batch['response_input'])
         label = batch['label'].float()
-        print(label)
-        loss = self.loss_fn(s1, label)   # fixed usage
+
+        loss = F.l1_loss(pred, label)
         self.log("train_loss", loss)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        s1 = self.forward(batch)
+        pred = self.model(batch['question_input'], batch['response_input'])
         label = batch['label'].float()
-        loss = self.loss_fn(s1, label)
+
+        loss = F.l1_loss(pred, label)
         self.log("val_loss", loss, prog_bar=True)
         return loss
 

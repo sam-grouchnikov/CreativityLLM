@@ -92,7 +92,7 @@ class CreativityRanker2(pl.LightningModule):
 
         return {"preds": pred.detach().cpu(), "labels": label.detach().cpu()}
 
-    def validation_epoch_end(self, outputs):
+    def on_validation_epoch_end(self, outputs):
         preds = torch.cat([o["preds"] for o in outputs]).numpy()
         labels = torch.cat([o["labels"] for o in outputs]).numpy()
 

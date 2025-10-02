@@ -10,6 +10,8 @@ from transformers import AutoModel
 import lightning as pl
 import torch
 import torch.nn.functional as F
+from scipy.stats import pearsonr, spearmanr
+
 
 class PolyEncoder(nn.Module):
     def __init__(self, model_name="bert-large-uncased", poly_m=64):
@@ -82,12 +84,25 @@ class CreativityRanker2(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        pred = self.model(batch['question_input'], batch['response_input'])
+        pred = self.model(batch['question_input'], batch['response_input'])  # [B]
         label = batch['label'].float()
 
         loss = F.l1_loss(pred, label)
         self.log("val_loss", loss, prog_bar=True)
-        return loss
+
+        return {"preds": pred.detach().cpu(), "labels": label.detach().cpu()}
+
+    def validation_epoch_end(self, outputs):
+        preds = torch.cat([o["preds"] for o in outputs]).numpy()
+        labels = torch.cat([o["labels"] for o in outputs]).numpy()
+
+        # Pearson correlation
+        pearson_corr, _ = pearsonr(preds, labels)
+        # Spearman correlation (rank-based)
+        spearman_corr, _ = spearmanr(preds, labels)
+
+        self.log("val_pearson", pearson_corr, prog_bar=True)
+        self.log("val_spearman", spearman_corr, prog_bar=True)
 
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.lr)

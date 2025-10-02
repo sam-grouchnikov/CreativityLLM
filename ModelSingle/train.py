@@ -10,6 +10,8 @@ from transformers import AutoModel
 import lightning as pl
 from torch.utils.data import DataLoader, random_split
 from lightning.pytorch.callbacks import ModelCheckpoint
+from scipy.stats import pearsonr
+
 
 
 import torch

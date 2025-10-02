@@ -10,6 +10,7 @@ from transformers import AutoModel
 import lightning as pl
 import torch
 import torch.nn.functional as F
+from scipy.stats import pearsonr
 
 class CreativityRankingDataset2(Dataset):
     def __init__(self, csv_file, tokenizer_name="bert-large-uncased", max_length=128):

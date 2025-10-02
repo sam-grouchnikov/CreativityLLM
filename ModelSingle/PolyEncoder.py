@@ -66,7 +66,6 @@ class CreativityRanker2(pl.LightningModule):
         super().__init__()
         self.model = PolyEncoder(model_name, poly_m)
         self.lr = lr
-        self.loss_fn = F.l1_loss()
 
     def forward(self, batch):
         q_input = batch['question_input']

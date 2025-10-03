@@ -71,7 +71,7 @@ def main():
 
     heldOutPath = "/home/sam/datasets/HeldOutTest.csv"
 
-    finalCorrelation = computeCorrelation(model, heldOutPath, batch, tokenizer, 128)
+    finalCorrelation = computeCorrelation(model, heldOutPath, batch, tokenizer, 128, ho=True)
 
     wandb_logger.log_metrics({"HeldOut correlation": finalCorrelation})
 

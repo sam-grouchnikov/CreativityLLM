@@ -69,7 +69,7 @@ def main():
 
     wandb_logger.log_metrics({"correlation": correlation})
 
-    heldOutPath = "/home/sam/datasets/HeldOutTest.csv"
+    heldOutPath = "/home/sam/HeldOutTest.csv"
 
     finalCorrelation = computeCorrelation(model, heldOutPath, batch, tokenizer, 128, ho=True)
 

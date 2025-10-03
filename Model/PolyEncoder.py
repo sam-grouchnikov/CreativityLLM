@@ -23,16 +23,15 @@ class PolyEncoder(nn.Module):
         # Learnable poly codes
         self.poly_codes = nn.Embedding(poly_m, self.hidden_size)
 
-        # Optional: regression head
+        # Regression head for scoring
         self.reg_head = nn.Linear(self.hidden_size, 1)
 
         # Poly code indices
         self.register_buffer("poly_code_ids", torch.arange(poly_m))
 
     def encode_context(self, input_ids, attention_mask, token_type_ids=None):
-        """
-        Encodes context into M poly-code embeddings
-        """
+
+        # Encodes context into M poly-code embeddings
         outputs = self.encoder(
             input_ids=input_ids,
             attention_mask=attention_mask,
@@ -51,9 +50,8 @@ class PolyEncoder(nn.Module):
         return attended  # [B, M, H]
 
     def encode_candidate(self, input_ids, attention_mask, token_type_ids=None):
-        """
-        Encodes candidate into a single vector
-        """
+
+        # Encodes candidate into a single vector
         outputs = self.encoder(
             input_ids=input_ids,
             attention_mask=attention_mask,
@@ -86,6 +84,7 @@ class CreativityScorer(pl.LightningModule):
         self.model = PolyEncoder(model_name, poly_m)
         self.lr = lr
 
+        # Validation train metric tracking
         self.val_preds = []
         self.val_labels = []
 
@@ -96,6 +95,7 @@ class CreativityScorer(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         pred = self(batch)
         label = batch['label'].float()
+        # Use smooth L1 loss, combination of MAE and MSE
         loss = F.smooth_l1_loss(pred, label)
         self.log("train_loss", loss, prog_bar=True)
         return loss
@@ -106,11 +106,13 @@ class CreativityScorer(pl.LightningModule):
         loss = F.smooth_l1_loss(pred, label)
         self.log("val_loss", loss, prog_bar=True)
 
+        # Track correlations
         self.val_preds.append(pred.detach().cpu())
         self.val_labels.append(label.detach().cpu())
         return loss
 
     def on_validation_epoch_end(self):
+        # Logging correlations after each epoch
         preds = torch.cat(self.val_preds).numpy()
         labels = torch.cat(self.val_labels).numpy()
 

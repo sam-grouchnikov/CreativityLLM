@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 
 class CorrelationDataset(Dataset):
-    def __init__(self, csv_file, tokenizer_name="microsoft/deberta-v3-base", max_length=128):
+    def __init__(self, csv_file, tokenizer_name="microsoft/deberta-v3-large", max_length=128):
         self.data = pd.read_csv(csv_file)
         self.tokenizer = DebertaV2Tokenizer.from_pretrained(tokenizer_name)
         self.max_length = max_length

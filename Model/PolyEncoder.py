@@ -12,6 +12,8 @@ import torch
 import torch.nn.functional as F
 from scipy.stats import pearsonr, spearmanr
 
+from test import computeCorrelation
+
 
 class PolyEncoder(nn.Module):
     def __init__(self, model_name, poly_m=64):
@@ -124,6 +126,9 @@ class CreativityScorer(pl.LightningModule):
 
         self.val_preds = []
         self.val_labels = []
+
+        corr = computeCorrelation(self, "/home/sam/datasets/TestData.csv", 8, "microsoft/deberta-v3-large", 128)
+        self.log("test_pearson", corr)
 
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.lr)

@@ -72,16 +72,16 @@ class PolyEncoder(nn.Module):
         attn_weights = torch.softmax(attn_scores, dim=-1)  # [B, M]
         context_pooled = torch.bmm(attn_weights.unsqueeze(1), context_vecs).squeeze(1)  # [B, H]
 
-        # Optional: combine candidate and pooled context with dot product
-        score = torch.sum(context_pooled * candidate_vec, dim=-1, keepdim=True)  # [B, 1]
+        # Option 1: combine candidate and pooled context with dot product
+        # score = torch.sum(context_pooled * candidate_vec, dim=-1, keepdim=True)  # [B, 1]
 
-        # Optional regression head (maps to scalar if desired)
+        # Option 2: regression head (maps to scalar if desired)
         score = self.reg_head(context_pooled)  # [B, 1]
 
         return score.squeeze(-1)  # [B]
 
 class CreativityRanker2(pl.LightningModule):
-    def __init__(self, model_name, poly_m=64, lr=3e-5):
+    def __init__(self, model_name, poly_m=64, lr=3e-7):
         super().__init__()
         self.model = PolyEncoder(model_name, poly_m)
         self.lr = lr

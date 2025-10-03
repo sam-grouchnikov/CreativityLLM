@@ -24,8 +24,8 @@ from test import computeCorrelation
 
 def main():
 
-    batch = 2
-    epochs = 15
+    batch = 4
+    epochs = 10
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
     tokenizer = "microsoft/deberta-v3-large"
@@ -48,7 +48,7 @@ def main():
         for param in layer.parameters():
             param.requires_grad = True
 
-    wandb_logger = WandbLogger(project="poly-encoder-iterations", name="test1")
+    wandb_logger = WandbLogger(project="poly-encoder-testing", name="m=64, lr=3e-7, dbv3l, reglay, 12lay")
 
     # checkpoint_callback = ModelCheckpoint(
     #     monitor="val_loss",  # metric to monitor

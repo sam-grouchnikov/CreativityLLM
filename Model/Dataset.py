@@ -12,7 +12,7 @@ import torch
 import torch.nn.functional as F
 from scipy.stats import pearsonr
 
-class CreativityRankingDataset2(Dataset):
+class CreativityRankingDataset(Dataset):
     def __init__(self, csv_file, tokenizer_name = "microsoft/deberta-v3-large", max_length=128):
         self.data = pd.read_csv(csv_file, header=0).fillna("")
         self.data["prompt"] = self.data["prompt"].astype(str)

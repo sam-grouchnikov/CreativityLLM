@@ -15,7 +15,7 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 import torch
 import torch.nn.functional as F
 
-from Model.CustomDataset import CreativityRankingDataset
+from Model.Dataset import CreativityRankingDataset
 from Model.PolyEncoder import CreativityRanker
 from test import computeCorrelation
 

@@ -17,8 +17,8 @@ from scipy.stats import pearsonr
 import torch
 import torch.nn.functional as F
 
-from ModelSingle.PolyEncoder import CreativityRanker2
-from ModelSingle.CustomDataset import CreativityRankingDataset2
+from Model.PolyEncoder import CreativityScorer
+from Model.Dataset import CreativityRankingDataset
 from test import computeCorrelation
 
 
@@ -32,7 +32,7 @@ def main():
 
 
 
-    dataset = CreativityRankingDataset2("/home/sam/datasets/Filtered.csv")
+    dataset = CreativityRankingDataset("/home/sam/datasets/Filtered.csv")
     train_size = int(0.875 * len(dataset))
     val_size = len(dataset) - train_size
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
@@ -40,7 +40,7 @@ def main():
     train_loader = DataLoader(train_dataset, batch_size=batch, shuffle=True, num_workers=15)
     val_loader = DataLoader(val_dataset, batch_size=batch, shuffle=False, num_workers=15)
 
-    model = CreativityRanker2(tokenizer)
+    model = CreativityScorer(tokenizer)
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
@@ -50,20 +50,11 @@ def main():
 
     wandb_logger = WandbLogger(project="poly-encoder-testing", name="m=64, lr=3e-5, dbv3l, reglay, 12lay, ebs=8")
 
-    # checkpoint_callback = ModelCheckpoint(
-    #     monitor="val_loss",  # metric to monitor
-    #     dirpath="/home/sam/checkpoints",  # directory to save checkpoints
-    #     filename="best-checkpoint-{epoch:02d}-{val_loss:.2f}",  # filename template
-    #     save_top_k=1,  # save only the best model
-    #     mode="min",  # 'min' because lower val_loss is better
-    #     save_weights_only=False  # set True to save only weights
-    # )
 
     trainer = pl.Trainer(
         max_epochs=epochs,
         accelerator="gpu",
         devices=devices,
-        # callbacks=[checkpoint_callback],
         precision="16",
         logger=wandb_logger,
         log_every_n_steps=5,

@@ -24,7 +24,7 @@ from test import computeCorrelation
 
 def main():
 
-    batch = 4
+    batch = 2
     epochs = 10
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
@@ -48,7 +48,7 @@ def main():
         for param in layer.parameters():
             param.requires_grad = True
 
-    wandb_logger = WandbLogger(project="poly-encoder-testing", name="m=64, lr=3e-5, dbv3l, reglay, 12lay")
+    wandb_logger = WandbLogger(project="poly-encoder-testing", name="m=64, lr=3e-5, dbv3l, reglay, 12lay, ebs=8")
 
     # checkpoint_callback = ModelCheckpoint(
     #     monitor="val_loss",  # metric to monitor

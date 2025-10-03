@@ -48,7 +48,7 @@ def main():
         for param in layer.parameters():
             param.requires_grad = True
 
-    wandb_logger = WandbLogger(project="poly-encoder-testing", name="m=64, lr=3e-7, dbv3l, reglay, 12lay")
+    wandb_logger = WandbLogger(project="poly-encoder-testing", name="m=64, lr=3e-5, dbv3l, reglay, 12lay")
 
     # checkpoint_callback = ModelCheckpoint(
     #     monitor="val_loss",  # metric to monitor

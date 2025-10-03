@@ -1,2 +1,0 @@
-Total Cut Pairs: 7,119,480
-Total Cut + Uncut Pairs: 20,681,408

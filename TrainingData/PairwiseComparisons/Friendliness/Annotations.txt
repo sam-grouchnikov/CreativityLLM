@@ -1,4 +1,0 @@
-Cut responses:  479
-Uncut responses:  1172
-Cut pairs:  228962
-Uncut pairs:  1372412

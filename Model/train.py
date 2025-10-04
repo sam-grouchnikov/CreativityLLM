@@ -28,7 +28,7 @@ def main():
     epochs = 10
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "bert-base-uncased"
+    tokenizer = "bert-large-uncased"
 
 
 
@@ -48,7 +48,7 @@ def main():
         for param in layer.parameters():
             param.requires_grad = True
 
-    wandb_logger = WandbLogger(project="bert-comparisons", name="bert base")
+    wandb_logger = WandbLogger(project="bert-comparisons", name="bert large")
 
 
     trainer = pl.Trainer(

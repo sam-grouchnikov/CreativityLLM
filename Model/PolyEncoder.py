@@ -127,8 +127,6 @@ class CreativityScorer(pl.LightningModule):
         self.val_preds = []
         self.val_labels = []
 
-        self.log("test_pearson", corr)
-
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.lr)
 

@@ -28,11 +28,11 @@ def main():
     epochs = 10
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "microsoft/deberta-v3-large"
+    tokenizer = "microsoft/bert-base-uncased"
 
 
 
-    dataset = CreativityRankingDataset("/home/sam/datasets/Filtered.csv")
+    dataset = CreativityRankingDataset("/home/sam/datasets/Filtered.csv", tokenizer)
     train_size = int(0.875 * len(dataset))
     val_size = len(dataset) - train_size
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
@@ -48,7 +48,7 @@ def main():
         for param in layer.parameters():
             param.requires_grad = True
 
-    wandb_logger = WandbLogger(project="poly-encoder-testing", name="m=64, lr=3e-5, dbv3l, reglay, 12lay, ebs=8")
+    wandb_logger = WandbLogger(project="bert-comparisons", name="bert base")
 
 
     trainer = pl.Trainer(

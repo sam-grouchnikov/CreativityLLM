@@ -127,7 +127,6 @@ class CreativityScorer(pl.LightningModule):
         self.val_preds = []
         self.val_labels = []
 
-        corr = computeCorrelation(self, "/home/sam/datasets/TestData.csv", 8, "microsoft/deberta-v3-large", 128)
         self.log("test_pearson", corr)
 
     def configure_optimizers(self):

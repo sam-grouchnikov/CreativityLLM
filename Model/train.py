@@ -48,7 +48,7 @@ def main():
         for param in layer.parameters():
             param.requires_grad = True
 
-    wandb_logger = WandbLogger(project="bert-comparisons", name="bert large")
+    wandb_logger = WandbLogger(project="bert-comparisons", name="deberta base")
 
 
     trainer = pl.Trainer(

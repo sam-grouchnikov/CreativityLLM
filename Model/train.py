@@ -25,10 +25,10 @@ from test import computeCorrelation
 def main():
 
     batch = 8
-    epochs = 5
+    epochs = 10
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "bert-base-uncased"
+    tokenizer = "microsoft/deberta-v3-large"
 
 
 
@@ -48,7 +48,7 @@ def main():
         for param in layer.parameters():
             param.requires_grad = True
 
-    wandb_logger = WandbLogger(project="bert-comparisons", name="bert base 32 batch")
+    wandb_logger = WandbLogger(project="bert-comparisons", name="deberta large batch 8 epoch 10")
 
 
     trainer = pl.Trainer(

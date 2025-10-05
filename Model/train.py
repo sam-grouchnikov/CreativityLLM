@@ -28,7 +28,7 @@ def main():
     epochs = 5
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "bert-large-uncased"
+    tokenizer = "bert-base-uncased"
 
 
 

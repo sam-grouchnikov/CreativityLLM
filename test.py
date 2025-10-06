@@ -1,12 +1,14 @@
 from torch.utils.data import Dataset
 from transformers import AutoTokenizer
 import pandas as pd
+import os
+os.environ["TRANSFORMERS_CACHE"] = "/home/sam/CreativityLLM/cachepath"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import torch
 from torch.utils.data import Dataset, DataLoader
 from transformers import AutoTokenizer, DebertaV2Tokenizer, DebertaV2TokenizerFast
 from scipy.stats import pearsonr, spearmanr
 import pandas as pd
-import os
 from scipy.special import expit
 import matplotlib.pyplot as plt
 import warnings
@@ -63,7 +65,7 @@ class CorrelationDataset(Dataset):
 
 def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=128,
                        cache_path=None, ho=False):
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True, cache_dir="/home/sam/CreativityLLM/cachepath")
 
     dataset = CorrelationDataset(csv_path, tokenizer, max_length=max_length, cache_path=cache_path)
     dataloader = DataLoader(

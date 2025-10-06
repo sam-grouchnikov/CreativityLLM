@@ -119,13 +119,13 @@ class CreativityScorer(pl.LightningModule):
         labels = torch.cat(self.val_labels).numpy()
 
         pearson_corr, _ = pearsonr(preds, labels)
-        spearman_corr, _ = spearmanr(preds, labels)
-
         self.log("val_pearson", pearson_corr, prog_bar=True)
-        self.log("val_spearman", spearman_corr, prog_bar=True)
 
         self.val_preds = []
         self.val_labels = []
+
+        testCorr = computeCorrelation(self, "/home/sam/datasets/TestData.csv", 2, 128)
+        self.log("test_corr", testCorr, prog_bar=True)
 
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.lr)

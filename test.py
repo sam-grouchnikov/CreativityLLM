@@ -80,28 +80,28 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
 
 
     pearson_corr = pearsonr(df["pred"], df["target"])[0]
-    spearman_corr = spearmanr(df["pred"], df["target"])[0]
+    # spearman_corr = spearmanr(df["pred"], df["target"])[0]
 
-    print(f"Pearson correlation: {pearson_corr:.4f}")
-    print(f"Spearman correlation: {spearman_corr:.4f}")
+    # print(f"Pearson correlation: {pearson_corr:.4f}")
+    # print(f"Spearman correlation: {spearman_corr:.4f}")
 
 
 
-    plt.figure(figsize=(10, 18))
-    plt.xlabel("Actual scores")
-    plt.ylabel("Predicted scores (per-prompt normalized)")
-    plt.title(f"Predicted vs Actual (r={pearson_corr:.2f}, rho={spearman_corr:.2f})")
-    plt.grid(True)
-    plt.tight_layout()
-    plt.savefig("pred_vs_actual_perprompt.png", dpi=150, bbox_inches="tight")
-    plt.close()
-
-    if (not ho):
-        df.to_csv("pred_vs_actual_perprompt.csv", index=False)
-        plt.savefig("pred_vs_actual_perprompt.png", dpi=150, bbox_inches="tight")
-
-    else:
-        df.to_csv("pred_vs_actual_perprompt_ho.csv", index=False)
-        plt.savefig("pred_vs_actual_perprompt_ho.png", dpi=150, bbox_inches="tight")
+    # plt.figure(figsize=(10, 18))
+    # plt.xlabel("Actual scores")
+    # plt.ylabel("Predicted scores (per-prompt normalized)")
+    # plt.title(f"Predicted vs Actual (r={pearson_corr:.2f}, rho={spearman_corr:.2f})")
+    # plt.grid(True)
+    # plt.tight_layout()
+    # plt.savefig("pred_vs_actual_perprompt.png", dpi=150, bbox_inches="tight")
+    # plt.close()
+    #
+    # if (not ho):
+    #     df.to_csv("pred_vs_actual_perprompt.csv", index=False)
+    #     plt.savefig("pred_vs_actual_perprompt.png", dpi=150, bbox_inches="tight")
+    #
+    # else:
+    #     df.to_csv("pred_vs_actual_perprompt_ho.csv", index=False)
+    #     plt.savefig("pred_vs_actual_perprompt_ho.png", dpi=150, bbox_inches="tight")
 
     return pearson_corr

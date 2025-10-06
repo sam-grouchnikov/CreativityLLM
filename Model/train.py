@@ -24,7 +24,7 @@ from test import computeCorrelation
 
 def main():
 
-    batch = 8
+    batch = 2
     epochs = 10
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
@@ -48,7 +48,7 @@ def main():
         for param in layer.parameters():
             param.requires_grad = True
 
-    wandb_logger = WandbLogger(project="bert-comparisons", name="deberta large batch 8 epoch 10")
+    wandb_logger = WandbLogger(project="poly-encoder-testing", name="deberta large ebs 8 test log")
 
 
     trainer = pl.Trainer(
@@ -58,7 +58,7 @@ def main():
         precision="16",
         logger=wandb_logger,
         log_every_n_steps=5,
-        # accumulate_grad_batches=4,
+        accumulate_grad_batches=4,
         strategy=DDPStrategy(find_unused_parameters=True),
         val_check_interval=0.25
     )

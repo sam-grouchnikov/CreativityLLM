@@ -120,6 +120,7 @@ class CreativityScorer(pl.LightningModule):
 
     def on_validation_epoch_end(self):
         # Logging correlations after each epoch
+
         preds = torch.cat(self.val_preds).numpy()
         labels = torch.cat(self.val_labels).numpy()
 

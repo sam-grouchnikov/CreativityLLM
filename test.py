@@ -9,10 +9,10 @@ import pandas as pd
 import os
 from scipy.special import expit
 import matplotlib.pyplot as plt
-
+import warnings
 
 class CorrelationDataset(Dataset):
-    def __init__(self, csv_file, tokenizer, max_length=128, cache_path=None):
+    def __init__(self, csv_file, tokenizer, max_length=128, cache_path="/home/sam/ubuntu/CreativityLLM/cachepath"):
         self.max_length = max_length
         self.tokenizer = tokenizer
 
@@ -48,7 +48,6 @@ class CorrelationDataset(Dataset):
 
             if cache_path:
                 torch.save(self.encodings, cache_path)
-                print(f"💾 Saved tokenized cache to {cache_path}")
 
     def __len__(self):
         return len(self.encodings["score"])
@@ -74,6 +73,7 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
         num_workers=4,
         pin_memory=torch.cuda.is_available(),
     )
+    warnings.filterwarnings("ignore", message="The current process just got forked")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)

@@ -22,6 +22,7 @@ class PolyEncoder(nn.Module):
         self.encoder = AutoModel.from_pretrained(model_name)
         self.hidden_size = self.encoder.config.hidden_size
         self.poly_m = poly_m
+        self.dropout = nn.Dropout(0.15)
 
         # Learnable poly codes
         self.poly_codes = nn.Embedding(poly_m, self.hidden_size)
@@ -30,9 +31,12 @@ class PolyEncoder(nn.Module):
         # self.reg_head = nn.Linear(self.hidden_size, 1)
         self.reg_head = nn.Sequential(
             nn.Linear(self.hidden_size, 512),
-            nn.Dropout(0.1),
             nn.ReLU(),
-            nn.Linear(512, 1),
+            nn.Dropout(0.15),
+            nn.Linear(512, 128),
+            nn.ReLU(),
+            nn.Dropout(0.15),
+            nn.Linear(128, 1)
         )
 
         # Poly code indices
@@ -56,6 +60,7 @@ class PolyEncoder(nn.Module):
         attn_scores = torch.matmul(poly_codes, token_embeds.transpose(1, 2))  # [B, M, L]
         attn_weights = torch.softmax(attn_scores, dim=-1)  # [B, M, L]
         attended = torch.bmm(attn_weights, token_embeds)  # [B, M, H]
+        attended = self.dropout(attended)
         return attended  # [B, M, H]
 
     def encode_candidate(self, input_ids, attention_mask, token_type_ids=None):
@@ -91,7 +96,7 @@ class PolyEncoder(nn.Module):
         return self.model_name
 
 class CreativityScorer(pl.LightningModule):
-    def __init__(self, model_name, poly_m=64, lr=1e-7):
+    def __init__(self, model_name, poly_m=64, lr=1e-5):
         super().__init__()
         self.model_name = model_name
         self.model = PolyEncoder(model_name, poly_m)

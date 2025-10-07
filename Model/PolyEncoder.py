@@ -130,9 +130,11 @@ class CreativityScorer(pl.LightningModule):
         self.val_preds = []
         self.val_labels = []
 
-        testCorr = computeCorrelation(self, "/home/sam/datasets/TestData.csv", 2, self.model_name, 128)
-        self.log("test_corr", testCorr, prog_bar=True)
-
     def configure_optimizers(self):
-        return torch.optim.AdamW(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.AdamW([
+            {"params": self.model.encoder.parameters(), "lr": self.lr},
+            {"params": list(self.model.poly_codes.parameters()) + list(self.model.reg_head.parameters()),
+             "lr": self.lr * 10},
+        ])
+        return optimizer
 

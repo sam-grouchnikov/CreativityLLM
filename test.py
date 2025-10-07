@@ -2,7 +2,6 @@ from torch.utils.data import Dataset
 from transformers import AutoTokenizer
 import pandas as pd
 import os
-os.environ["TRANSFORMERS_CACHE"] = "/home/sam/CreativityLLM/cachepath"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -14,26 +13,24 @@ import matplotlib.pyplot as plt
 import warnings
 
 class CorrelationDataset(Dataset):
-    def __init__(self, csv_file, tokenizer, max_length=128, cache_path="/home/sam/ubuntu/CreativityLLM/cachepath"):
+    def __init__(self, csv_file, tokenizer, max_length=128):
         self.max_length = max_length
         self.tokenizer = tokenizer
 
-        if cache_path and os.path.exists(cache_path):
-            self.encodings = torch.load(cache_path)
-        else:
-            df = pd.read_csv(csv_file)
-            self.questions = df["prompt"].tolist()
-            self.responses = df["response"].tolist()
-            self.scores = torch.tensor(df["score"].values, dtype=torch.float)
 
-            q_enc = self.tokenizer(
+        df = pd.read_csv(csv_file)
+        self.questions = df["prompt"]
+        self.responses = df["response"]
+        self.scores = torch.tensor(df["score"].values, dtype=torch.float)
+
+        q_enc = self.tokenizer(
                 self.questions,
                 truncation=True,
                 padding="max_length",
                 max_length=self.max_length,
                 return_tensors="pt"
-            )
-            r_enc = self.tokenizer(
+        )
+        r_enc = self.tokenizer(
                 self.responses,
                 truncation=True,
                 padding="max_length",
@@ -41,15 +38,13 @@ class CorrelationDataset(Dataset):
                 return_tensors="pt"
             )
 
-            self.encodings = {
+        self.encodings = {
                 "question_input": q_enc,
                 "response_input": r_enc,
                 "score": self.scores,
                 "question_text": self.questions,
             }
 
-            if cache_path:
-                torch.save(self.encodings, cache_path)
 
     def __len__(self):
         return len(self.encodings["score"])
@@ -63,11 +58,10 @@ class CorrelationDataset(Dataset):
         }
 
 
-def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=128,
-                       cache_path=None, ho=False):
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True, cache_dir="/home/sam/CreativityLLM/cachepath")
+def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=128, ho=False):
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True)
 
-    dataset = CorrelationDataset(csv_path, tokenizer, max_length=max_length, cache_path=cache_path)
+    dataset = CorrelationDataset(csv_path, tokenizer, max_length=max_length)
     dataloader = DataLoader(
         dataset,
         batch_size=batch_size,

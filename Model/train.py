@@ -65,7 +65,8 @@ def main():
         log_every_n_steps=10,
         accumulate_grad_batches=4,
         strategy=DDPStrategy(find_unused_parameters=True),
-        gradient_clip_val=0.8
+        gradient_clip_val=0.8,
+        val_check_interval=0.2
     )
     trainer.fit(model, train_loader, val_loader)
 

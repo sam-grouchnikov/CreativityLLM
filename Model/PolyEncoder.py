@@ -32,10 +32,10 @@ class PolyEncoder(nn.Module):
         self.reg_head = nn.Sequential(
             nn.Linear(self.hidden_size, 512),
             nn.ReLU(),
-            nn.Dropout(0.15),
+            nn.Dropout(0.1),
             nn.Linear(512, 128),
             nn.ReLU(),
-            nn.Dropout(0.15),
+            nn.Dropout(0.1),
             nn.Linear(128, 1)
         )
 
@@ -85,10 +85,10 @@ class PolyEncoder(nn.Module):
         context_pooled = torch.bmm(attn_weights.unsqueeze(1), context_vecs).squeeze(1)  # [B, H]
 
         # Option 1: combine candidate and pooled context with dot product
-        score = torch.sum(context_pooled * candidate_vec, dim=-1, keepdim=True)  # [B, 1]
+        # score = torch.sum(context_pooled * candidate_vec, dim=-1, keepdim=True)  # [B, 1]
 
         # Option 2: regression head (maps to scalar if desired)
-        # score = self.reg_head(context_pooled)
+        score = self.reg_head(context_pooled)
 
         return score.squeeze(-1)  # [B]
 
@@ -96,7 +96,7 @@ class PolyEncoder(nn.Module):
         return self.model_name
 
 class CreativityScorer(pl.LightningModule):
-    def __init__(self, model_name, poly_m=64, lr=3e-5):
+    def __init__(self, model_name, poly_m=64, lr=1e-5):
         super().__init__()
         self.model_name = model_name
         self.model = PolyEncoder(model_name, poly_m)

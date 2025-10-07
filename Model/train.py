@@ -27,7 +27,7 @@ import numpy as np
 
 def main():
 
-    batch = 1
+    batch = 2
     epochs = 10
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
@@ -36,21 +36,12 @@ def main():
 
 
     dataset = CreativityRankingDataset("/home/sam/datasets/TrainData.csv", tokenizer)
-    labels = np.array([dataset[i]['label'] for i in range(len(dataset))])
-    bins = np.linspace(labels.min(), labels.max(), 11)  # 10 bins
-    label_bins = np.digitize(labels, bins)
+    # labels = np.array([dataset[i]['label'] for i in range(len(dataset))])
+    # bins = np.linspace(labels.min(), labels.max(), 11)  # 10 bins
+    # label_bins = np.digitize(labels, bins)
     train_size = int(0.875 * len(dataset))
     val_size = len(dataset) - train_size
-    # train_dataset, val_dataset = random_split(dataset, [train_size, val_size], generator=generator)
-    train_idx, val_idx = train_test_split(
-        np.arange(len(dataset)),
-        test_size=0.125,
-        random_state=42,
-        stratify=label_bins  # stratify on the binned labels
-    )
-
-    train_dataset = Subset(dataset, train_idx)
-    val_dataset = Subset(dataset, val_idx)
+    train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
     train_loader = DataLoader(train_dataset, batch_size=batch, shuffle=True, num_workers=15)
     val_loader = DataLoader(val_dataset, batch_size=batch, shuffle=False, num_workers=15)
 

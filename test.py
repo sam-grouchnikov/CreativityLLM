@@ -19,8 +19,8 @@ class CorrelationDataset(Dataset):
 
 
         df = pd.read_csv(csv_file)
-        self.questions = df["prompt"]
-        self.responses = df["response"]
+        self.questions = df["prompt"].astype(str)
+        self.responses = df["response"].astype(str)
         self.scores = torch.tensor(df["score"].values, dtype=torch.float)
 
         q_enc = self.tokenizer(

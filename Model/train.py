@@ -53,7 +53,7 @@ def main():
         for param in layer.parameters():
             param.requires_grad = True
 
-    wandb_logger = WandbLogger(project="poly-encoder-testing", name="deberta large ebs 8 no dl")
+    wandb_logger = WandbLogger(project="fixed-testing", name="deberta large ebs 8 no dl")
 
 
     trainer = pl.Trainer(

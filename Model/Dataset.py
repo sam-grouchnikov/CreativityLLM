@@ -45,7 +45,7 @@ class CreativityRankingDataset(Dataset):
             return_tensors="pt"
         )
 
-        row_label = float(row["se"])
+        row_label = float(row["score"])
 
         return {
             "question_input": {k: v.squeeze(0) for k, v in q_inputs.items()},

@@ -32,7 +32,7 @@ def main():
 
 
 
-    dataset = CreativityRankingDataset("/home/sam/datasets/Filtered.csv", tokenizer)
+    dataset = CreativityRankingDataset("/home/sam/datasets/TrainData.csv", tokenizer)
     train_size = int(0.875 * len(dataset))
     val_size = len(dataset) - train_size
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])

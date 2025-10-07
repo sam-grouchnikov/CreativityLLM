@@ -27,7 +27,7 @@ import numpy as np
 
 def main():
 
-    batch = 1
+    batch = 8
     epochs = 10
     devices = torch.cuda.device_count()
     pl.seed_everything(42)

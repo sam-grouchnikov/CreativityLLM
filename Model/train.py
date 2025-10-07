@@ -31,7 +31,7 @@ def main():
     epochs = 10
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "bert-large-uncased"
+    tokenizer = "microsoft/bert-large-uncased"
 
 
 
@@ -49,7 +49,7 @@ def main():
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
-    for layer in model.model.encoder.encoder.layer[-12:]:
+    for layer in model.model.encoder.encoder.layer[-24:]:
         for param in layer.parameters():
             param.requires_grad = True
 
@@ -65,7 +65,7 @@ def main():
         log_every_n_steps=50,
         accumulate_grad_batches=8,
         strategy=DDPStrategy(find_unused_parameters=True),
-        gradient_clip_val=1.0
+        gradient_clip_val=0.8
     )
     trainer.fit(model, train_loader, val_loader)
 

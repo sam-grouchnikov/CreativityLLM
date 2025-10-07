@@ -27,7 +27,13 @@ class PolyEncoder(nn.Module):
         self.poly_codes = nn.Embedding(poly_m, self.hidden_size)
 
         # Regression head for scoring
-        self.reg_head = nn.Linear(self.hidden_size, 1)
+        # self.reg_head = nn.Linear(self.hidden_size, 1)
+        self.reg_head = nn.Sequential(
+            nn.Linear(self.hidden_size, 512),
+            nn.Dropout(0.1),
+            nn.ReLU(),
+            nn.Linear(512, 1),
+        )
 
         # Poly code indices
         self.register_buffer("poly_code_ids", torch.arange(poly_m))
@@ -85,7 +91,7 @@ class PolyEncoder(nn.Module):
         return self.model_name
 
 class CreativityScorer(pl.LightningModule):
-    def __init__(self, model_name, poly_m=64, lr=3e-5):
+    def __init__(self, model_name, poly_m=64, lr=3e-6):
         super().__init__()
         self.model_name = model_name
         self.model = PolyEncoder(model_name, poly_m)

@@ -27,7 +27,7 @@ import numpy as np
 
 def main():
 
-    batch = 4
+    batch = 1
     epochs = 10
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
@@ -58,7 +58,7 @@ def main():
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
-    for layer in model.model.encoder.encoder.layer[-12:]:
+    for layer in model.model.encoder.encoder.layer[-15:]:
         for param in layer.parameters():
             param.requires_grad = True
 

@@ -9,6 +9,8 @@ import torch.nn as nn
 from transformers import AutoModel
 import lightning as pl
 from torch.utils.data import DataLoader, random_split
+from sklearn.model_selection import train_test_split
+from torch.utils.data import Subset
 from lightning.pytorch.callbacks import ModelCheckpoint
 from scipy.stats import pearsonr
 
@@ -20,11 +22,12 @@ import torch.nn.functional as F
 from Model.PolyEncoder import CreativityScorer
 from Model.Dataset import CreativityRankingDataset
 from test import computeCorrelation
+import numpy as np
 
 
 def main():
 
-    batch = 2
+    batch = 4
     epochs = 10
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
@@ -33,10 +36,21 @@ def main():
 
 
     dataset = CreativityRankingDataset("/home/sam/datasets/TrainData.csv", tokenizer)
+    labels = np.array([dataset[i]['label'] for i in range(len(dataset))])
+    bins = np.linspace(labels.min(), labels.max(), 11)  # 10 bins
+    label_bins = np.digitize(labels, bins)
     train_size = int(0.875 * len(dataset))
     val_size = len(dataset) - train_size
-    train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+    # train_dataset, val_dataset = random_split(dataset, [train_size, val_size], generator=generator)
+    train_idx, val_idx = train_test_split(
+        np.arange(len(dataset)),
+        test_size=0.125,
+        random_state=42,
+        stratify=label_bins  # stratify on the binned labels
+    )
 
+    train_dataset = Subset(dataset, train_idx)
+    val_dataset = Subset(dataset, val_idx)
     train_loader = DataLoader(train_dataset, batch_size=batch, shuffle=True, num_workers=15)
     val_loader = DataLoader(val_dataset, batch_size=batch, shuffle=False, num_workers=15)
 
@@ -44,7 +58,7 @@ def main():
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
-    for layer in model.model.encoder.encoder.layer[-18:]:
+    for layer in model.model.encoder.encoder.layer[-12:]:
         for param in layer.parameters():
             param.requires_grad = True
 

@@ -63,8 +63,9 @@ def main():
         precision="16",
         logger=wandb_logger,
         log_every_n_steps=50,
-        accumulate_grad_batches=4,
+        accumulate_grad_batches=8,
         strategy=DDPStrategy(find_unused_parameters=True),
+        gradient_clip_val=1.0
     )
     trainer.fit(model, train_loader, val_loader)
 

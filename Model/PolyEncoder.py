@@ -140,7 +140,7 @@ class CreativityScorer(pl.LightningModule):
         optimizer = torch.optim.AdamW([
             {"params": self.model.encoder.parameters(), "lr": self.lr},
             {"params": list(self.model.poly_codes.parameters()) + list(self.model.reg_head.parameters()),
-             "lr": self.lr * 10},
+             "lr": self.lr * 100},
         ])
         return optimizer
 

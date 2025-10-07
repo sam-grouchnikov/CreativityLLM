@@ -48,7 +48,7 @@ def main():
         for param in layer.parameters():
             param.requires_grad = True
 
-    wandb_logger = WandbLogger(project="poly-encoder-testing", name="deberta large ebs 8 test log")
+    wandb_logger = WandbLogger(project="poly-encoder-testing", name="deberta large ebs 8 no dl")
 
 
     trainer = pl.Trainer(
@@ -57,10 +57,9 @@ def main():
         devices=devices,
         precision="16",
         logger=wandb_logger,
-        log_every_n_steps=5,
+        log_every_n_steps=50,
         accumulate_grad_batches=4,
         strategy=DDPStrategy(find_unused_parameters=True),
-        val_check_interval=0.25
     )
     trainer.fit(model, train_loader, val_loader)
 

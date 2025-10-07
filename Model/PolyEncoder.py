@@ -16,7 +16,7 @@ from test import computeCorrelation
 
 
 class PolyEncoder(nn.Module):
-    def __init__(self, model_name, poly_m=64):
+    def __init__(self, model_name, poly_m=256):
         super().__init__()
         self.model_name = model_name
         self.encoder = AutoModel.from_pretrained(model_name)

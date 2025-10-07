@@ -27,7 +27,7 @@ import numpy as np
 
 def main():
 
-    batch = 2
+    batch = 8
     epochs = 10
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
@@ -63,7 +63,7 @@ def main():
         precision="16",
         logger=wandb_logger,
         log_every_n_steps=10,
-        accumulate_grad_batches=10,
+        accumulate_grad_batches=4,
         strategy=DDPStrategy(find_unused_parameters=True),
         gradient_clip_val=0.8
     )

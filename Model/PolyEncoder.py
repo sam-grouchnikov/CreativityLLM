@@ -31,7 +31,7 @@ class PolyEncoder(nn.Module):
         # Regression head for scoring
         # self.reg_head = nn.Linear(self.hidden_size, 1)
         self.reg_head = nn.Sequential(
-            nn.Linear(self.hidden_size * 3, 1028),
+            nn.Linear(self.hidden_size * 5, 1028),
             nn.ReLU(),
             nn.Dropout(0.1),
             nn.Linear(1028, 256),
@@ -90,22 +90,24 @@ class PolyEncoder(nn.Module):
 
         # Candidate attends to poly codes
         attn_scores = torch.matmul(candidate_vec.unsqueeze(1), context_vecs.transpose(1, 2)).squeeze(1)  # [B, M]
-        attn_weights = torch.softmax(attn_scores, dim=-1)  # [B, M]
+        attn_weights = torch.softmax(attn_scores * 1.5, dim=-1)  # [B, M]
         context_pooled = torch.bmm(attn_weights.unsqueeze(1), context_vecs).squeeze(1)  # [B, H]
 
         # Option 1: combine candidate and pooled context with dot product
         # score = torch.sum(context_pooled * candidate_vec, dim=-1, keepdim=True)  # [B, 1]
 
         # Option 2: regression head (maps to scalar if desired)
+        combined = torch.cat((
+            context_pooled,
+            candidate_vec,
+            context_pooled * candidate_vec,
+            candidate_vec - context_pooled,
+            candidate_vec ** 2
+        ), dim=1)
 
-        combined = torch.cat((context_pooled, candidate_vec, (context_pooled * candidate_vec)), dim=1)
-        context_score = self.reg_head(combined)
+        score = self.reg_head(combined)
 
-        cand_score = self.candidate_head(candidate_vec).squeeze(-1)
-
-        score = context_score + 0.3 * cand_score
-
-        return score.squeeze(-1)  # [B]
+        return score
 
     def getName(self):
         return self.model_name
@@ -149,7 +151,7 @@ class CreativityScorer(pl.LightningModule):
     def on_validation_epoch_end(self):
         # Logging correlations after each epoch
 
-        preds = torch.cat(self.val_preds).squeeze(-1).numpy()
+        preds = torch.cat(self.val_preds).numpy()
         labels = torch.cat(self.val_labels).numpy()
 
         pearson_corr, _ = pearsonr(preds, labels)

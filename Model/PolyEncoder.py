@@ -24,6 +24,7 @@ class PolyEncoder(nn.Module):
         self.poly_m = poly_m
         self.dropout = nn.Dropout(0.2)
 
+
         # Learnable poly codes
         self.poly_codes = nn.Embedding(poly_m, self.hidden_size)
 
@@ -78,7 +79,7 @@ class PolyEncoder(nn.Module):
         # Encode context and candidate
         context_vecs = self.encode_context(**context_inputs)  # [B, M, H]
         candidate_vec = self.encode_candidate(**candidate_inputs)  # [B, H]
-        context_vecs = F.normalize(context_vecs, dim=-1)
+        context_vecs = F.normalize(context_vecs, dim=-1) * 0.75
         candidate_vec = F.normalize(candidate_vec, dim=-1)
 
         # Candidate attends to poly codes
@@ -105,6 +106,8 @@ class CreativityScorer(pl.LightningModule):
         self.model_name = model_name
         self.model = PolyEncoder(model_name, poly_m)
         self.lr = lr
+        self.val_pearson_ema = None
+        self.ema_alpha = 0.5
 
         # Validation train metric tracking
         self.val_preds = []
@@ -140,7 +143,16 @@ class CreativityScorer(pl.LightningModule):
         labels = torch.cat(self.val_labels).numpy()
 
         pearson_corr, _ = pearsonr(preds, labels)
+        if self.val_pearson_ema is None:
+            self.val_pearson_ema = pearson_corr
+        else:
+            self.val_pearson_ema = (
+                    self.ema_alpha * pearson_corr +
+                    (1 - self.ema_alpha) * self.val_pearson_ema
+            )
         self.log("val_pearson", pearson_corr, prog_bar=True)
+        self.log("val_pearson_ema", self.val_pearson_ema, prog_bar=True)
+
 
         self.val_preds = []
         self.val_labels = []

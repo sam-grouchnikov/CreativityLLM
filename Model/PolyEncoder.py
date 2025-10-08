@@ -30,7 +30,7 @@ class PolyEncoder(nn.Module):
         # Regression head for scoring
         # self.reg_head = nn.Linear(self.hidden_size, 1)
         self.reg_head = nn.Sequential(
-            nn.Linear(self.hidden_size * 2, 1028),
+            nn.Linear(self.hidden_size * 3, 1028),
             nn.ReLU(),
             nn.Dropout(0.1),
             nn.Linear(1028, 256),
@@ -78,6 +78,8 @@ class PolyEncoder(nn.Module):
         # Encode context and candidate
         context_vecs = self.encode_context(**context_inputs)  # [B, M, H]
         candidate_vec = self.encode_candidate(**candidate_inputs)  # [B, H]
+        context_vecs = F.normalize(context_vecs, dim=-1)
+        candidate_vec = F.normalize(candidate_vec, dim=-1)
 
         # Candidate attends to poly codes
         attn_scores = torch.matmul(candidate_vec.unsqueeze(1), context_vecs.transpose(1, 2)).squeeze(1)  # [B, M]
@@ -89,7 +91,7 @@ class PolyEncoder(nn.Module):
 
         # Option 2: regression head (maps to scalar if desired)
 
-        combined = torch.cat((context_pooled, candidate_vec), dim=1)
+        combined = torch.cat((context_pooled, candidate_vec, (context_pooled * candidate_vec)), dim=1)
         score = self.reg_head(combined)
 
         return score.squeeze(-1)  # [B]

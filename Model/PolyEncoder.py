@@ -40,6 +40,12 @@ class PolyEncoder(nn.Module):
             nn.Linear(256, 1)
         )
 
+        self.candidate_head = nn.Sequential(
+            nn.Linear(self.hidden_size, 128),
+            nn.ReLU(),
+            nn.Linear(128, 1)
+        )
+
         # Poly code indices
         self.register_buffer("poly_code_ids", torch.arange(poly_m))
 
@@ -79,7 +85,7 @@ class PolyEncoder(nn.Module):
         # Encode context and candidate
         context_vecs = self.encode_context(**context_inputs)  # [B, M, H]
         candidate_vec = self.encode_candidate(**candidate_inputs)  # [B, H]
-        context_vecs = F.normalize(context_vecs, dim=-1) * 0.75
+        context_vecs = F.normalize(context_vecs, dim=-1)
         candidate_vec = F.normalize(candidate_vec, dim=-1)
 
         # Candidate attends to poly codes
@@ -93,7 +99,11 @@ class PolyEncoder(nn.Module):
         # Option 2: regression head (maps to scalar if desired)
 
         combined = torch.cat((context_pooled, candidate_vec, (context_pooled * candidate_vec)), dim=1)
-        score = self.reg_head(combined)
+        context_score = self.reg_head(combined)
+
+        cand_score = self.candidate_head(candidate_vec).squeeze(-1)
+
+        score = context_score + 0.3 * cand_score
 
         return score.squeeze(-1)  # [B]
 

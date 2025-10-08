@@ -101,7 +101,7 @@ class PolyEncoder(nn.Module):
 
         score = self.reg_head(combined)
 
-        return score
+        return score.squeeze(-1)
 
     def getName(self):
         return self.model_name

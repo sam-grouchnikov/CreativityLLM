@@ -23,6 +23,7 @@ class PolyEncoder(nn.Module):
         self.hidden_size = self.encoder.config.hidden_size
         self.poly_m = poly_m
         self.dropout = nn.Dropout(0.2)
+        self.context_weighter = nn.Parameter(torch.tensor(1.0))
 
 
         # Learnable poly codes
@@ -86,7 +87,7 @@ class PolyEncoder(nn.Module):
 
         # Candidate attends to poly codes
         attn_scores = torch.matmul(candidate_vec.unsqueeze(1), context_vecs.transpose(1, 2)).squeeze(1)  # [B, M]
-        attn_weights = torch.softmax(attn_scores * 1.5, dim=-1)  # [B, M]
+        attn_weights = torch.softmax(attn_scores, dim=-1)  # [B, M]
         context_pooled = torch.bmm(attn_weights.unsqueeze(1), context_vecs).squeeze(1)  # [B, H]
 
         # Option 1: combine candidate and pooled context with dot product
@@ -94,9 +95,9 @@ class PolyEncoder(nn.Module):
 
         # Option 2: regression head (maps to scalar if desired)
         combined = torch.cat((
-            context_pooled,
+            context_pooled * self.context_weighter,
             candidate_vec,
-            context_pooled * candidate_vec,
+            (context_pooled * self.context_weighter) * candidate_vec,
         ), dim=1)
 
         score = self.reg_head(combined)
@@ -114,6 +115,8 @@ class CreativityScorer(pl.LightningModule):
         self.lr = lr
         self.val_pearson_ema = None
         self.ema_alpha = 0.5
+        self.context_weighter = nn.Parameter(torch.tensor(1.0))
+
 
         # Validation train metric tracking
         self.val_preds = []
@@ -167,7 +170,7 @@ class CreativityScorer(pl.LightningModule):
         optimizer = torch.optim.AdamW([
             {"params": self.model.encoder.parameters(), "lr": self.lr},
             {"params": list(self.model.poly_codes.parameters()) + list(self.model.reg_head.parameters()),
-             "lr": self.lr * 100},
+             "lr": self.lr * 10},
         ])
         return optimizer
 

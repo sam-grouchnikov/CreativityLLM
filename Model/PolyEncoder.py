@@ -121,7 +121,7 @@ class PolyEncoder(nn.Module):
         return self.model_name
 
 class CreativityScorer(pl.LightningModule):
-    def __init__(self, model_name, poly_m=256, lr=5e-4):
+    def __init__(self, model_name, poly_m=256, lr=1e-5):
         super().__init__()
         self.model_name = model_name
         self.model = PolyEncoder(model_name, poly_m)
@@ -187,7 +187,7 @@ class CreativityScorer(pl.LightningModule):
                 *self.model.reg_head.parameters(),
                 *self.model.cross_attn.parameters(),
                 *self.model.norm.parameters()
-            ], "lr": self.lr},
+            ], "lr": self.lr / 5},
         ])
         return optimizer
 

@@ -121,7 +121,7 @@ class PolyEncoder(nn.Module):
         return self.model_name
 
 class CreativityScorer(pl.LightningModule):
-    def __init__(self, model_name, poly_m=256, lr=3e-5):
+    def __init__(self, model_name, poly_m=256, lr=1e-5):
         super().__init__()
         self.model_name = model_name
         self.model = PolyEncoder(model_name, poly_m)
@@ -182,8 +182,12 @@ class CreativityScorer(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW([
             {"params": self.model.encoder.parameters(), "lr": self.lr},
-            {"params": list(self.model.poly_codes.parameters()) + list(self.model.reg_head.parameters()),
-             "lr": self.lr * 10},
+            {"params": [
+                *self.model.poly_codes.parameters(),
+                *self.model.reg_head.parameters(),
+                *self.model.cross_attn.parameters(),
+                *self.model.norm.parameters()
+            ], "lr": self.lr / 5},
         ])
         return optimizer
 

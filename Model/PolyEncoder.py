@@ -98,15 +98,15 @@ class PolyEncoder(nn.Module):
         context_pooled = self.norm(attended.squeeze(1))
 
         # Option 1: combine candidate and pooled context with dot product
-        # score = torch.sum(context_pooled * candidate_vec, dim=-1, keepdim=True)  # [B, 1]
+        score = torch.sum(context_pooled * candidate_vec, dim=-1, keepdim=True)  # [B, 1]
 
         # Option 2: regression head (maps to scalar if desired)
-        combined = torch.cat((
-            (context_pooled * self.context_weighter) * candidate_vec,
-            candidate_vec,
-        ), dim=1)
+        # combined = torch.cat((
+        #     (context_pooled * self.context_weighter) * candidate_vec,
+        #     candidate_vec,
+        # ), dim=1)
 
-        score = self.reg_head(combined)
+        # score = self.reg_head(combined)
 
         return score.squeeze(-1)
 

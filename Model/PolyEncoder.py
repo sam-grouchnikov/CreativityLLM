@@ -34,16 +34,10 @@ class PolyEncoder(nn.Module):
         # Regression head for scoring
         # self.reg_head = nn.Linear(self.hidden_size, 1)
         self.reg_head = nn.Sequential(
-            nn.Linear(self.hidden_size * 3, 1028),
+            nn.Linear(self.hidden_size * 3, 512),
             nn.ReLU(),
             nn.Dropout(0.1),
-            nn.Linear(1028, 528),
-            nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(528, 256),
-            nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(256, 1)
+            nn.Linear(512, 1)
         )
 
 
@@ -121,7 +115,7 @@ class PolyEncoder(nn.Module):
         return self.model_name
 
 class CreativityScorer(pl.LightningModule):
-    def __init__(self, model_name, poly_m=256, lr=1e-5):
+    def __init__(self, model_name, poly_m=256, lr=3e-5):
         super().__init__()
         self.model_name = model_name
         self.model = PolyEncoder(model_name, poly_m)

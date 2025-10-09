@@ -23,7 +23,6 @@ class PolyEncoder(nn.Module):
         self.hidden_size = self.encoder.config.hidden_size
         self.poly_m = poly_m
         self.dropout = nn.Dropout(0.2)
-        self.context_weighter = nn.Parameter(torch.tensor(1.0))
         self.cross_attn = nn.MultiheadAttention(embed_dim=self.hidden_size, num_heads=8, batch_first=True)
         self.norm = nn.LayerNorm(self.hidden_size)
 
@@ -98,13 +97,13 @@ class PolyEncoder(nn.Module):
         context_pooled = self.norm(attended.squeeze(1))
 
         # Option 1: combine candidate and pooled context with dot product
-        score = torch.sum(context_pooled * candidate_vec, dim=-1, keepdim=True)  # [B, 1]
+        # score = torch.sum(context_pooled * candidate_vec, dim=-1, keepdim=True)  # [B, 1]
 
         # Option 2: regression head (maps to scalar if desired)
-        # combined = torch.cat((
-        #     (context_pooled * self.context_weighter) * candidate_vec,
-        #     candidate_vec,
-        # ), dim=1)
+        combined = torch.cat((
+            (context_pooled) * candidate_vec,
+            candidate_vec,
+        ), dim=1)
 
         # score = self.reg_head(combined)
 
@@ -121,7 +120,6 @@ class CreativityScorer(pl.LightningModule):
         self.lr = lr
         self.val_pearson_ema = None
         self.ema_alpha = 0.5
-        self.context_weighter = nn.Parameter(torch.tensor(1.0))
 
 
         # Validation train metric tracking

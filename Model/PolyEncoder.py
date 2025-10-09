@@ -34,10 +34,10 @@ class PolyEncoder(nn.Module):
         # Regression head for scoring
         # self.reg_head = nn.Linear(self.hidden_size, 1)
         self.reg_head = nn.Sequential(
-            nn.Linear(self.hidden_size * 3, 512),
+            nn.Linear(self.hidden_size * 2, 1028),
             nn.ReLU(),
             nn.Dropout(0.1),
-            nn.Linear(512, 1)
+            nn.Linear(1028, 1)
         )
 
 
@@ -102,9 +102,8 @@ class PolyEncoder(nn.Module):
 
         # Option 2: regression head (maps to scalar if desired)
         combined = torch.cat((
-            context_pooled * self.context_weighter,
-            candidate_vec,
             (context_pooled * self.context_weighter) * candidate_vec,
+            candidate_vec,
         ), dim=1)
 
         score = self.reg_head(combined)
@@ -115,7 +114,7 @@ class PolyEncoder(nn.Module):
         return self.model_name
 
 class CreativityScorer(pl.LightningModule):
-    def __init__(self, model_name, poly_m=256, lr=3e-5):
+    def __init__(self, model_name, poly_m=256, lr=1e-5):
         super().__init__()
         self.model_name = model_name
         self.model = PolyEncoder(model_name, poly_m)

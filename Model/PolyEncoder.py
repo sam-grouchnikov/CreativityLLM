@@ -24,6 +24,8 @@ class PolyEncoder(nn.Module):
         self.poly_m = poly_m
         self.dropout = nn.Dropout(0.2)
         self.context_weighter = nn.Parameter(torch.tensor(1.0))
+        self.cross_attn = nn.MultiheadAttention(embed_dim=self.hidden_size, num_heads=8, batch_first=True)
+        self.norm = nn.LayerNorm(self.hidden_size)
 
 
         # Learnable poly codes
@@ -35,7 +37,10 @@ class PolyEncoder(nn.Module):
             nn.Linear(self.hidden_size * 3, 1028),
             nn.ReLU(),
             nn.Dropout(0.1),
-            nn.Linear(1028, 256),
+            nn.Linear(1028, 528),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(528, 256),
             nn.ReLU(),
             nn.Dropout(0.1),
             nn.Linear(256, 1)
@@ -86,9 +91,17 @@ class PolyEncoder(nn.Module):
         candidate_vec = F.normalize(candidate_vec, dim=-1)
 
         # Candidate attends to poly codes
-        attn_scores = torch.matmul(candidate_vec.unsqueeze(1), context_vecs.transpose(1, 2)).squeeze(1)  # [B, M]
-        attn_weights = torch.softmax(attn_scores, dim=-1)  # [B, M]
-        context_pooled = torch.bmm(attn_weights.unsqueeze(1), context_vecs).squeeze(1)  # [B, H]
+        # attn_scores = torch.matmul(candidate_vec.unsqueeze(1), context_vecs.transpose(1, 2)).squeeze(1)  # [B, M]
+        # attn_weights = torch.softmax(attn_scores, dim=-1)  # [B, M]
+        # context_pooled = torch.bmm(attn_weights.unsqueeze(1), context_vecs).squeeze(1)  # [B, H]
+
+        # expand candidate to have a "sequence length" of 1
+        query = candidate_vec.unsqueeze(1)
+        key = value = context_vecs
+
+        # multi-head cross-attention
+        attended, _ = self.cross_attn(query, key, value)
+        context_pooled = self.norm(attended.squeeze(1))
 
         # Option 1: combine candidate and pooled context with dot product
         # score = torch.sum(context_pooled * candidate_vec, dim=-1, keepdim=True)  # [B, 1]

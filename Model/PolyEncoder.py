@@ -22,7 +22,11 @@ class PolyEncoder(nn.Module):
         self.encoder = AutoModel.from_pretrained(model_name)
         self.hidden_size = self.encoder.config.hidden_size
         self.poly_m = poly_m
-        self.dropout = nn.Dropout(0.1)
+        self.dropout = nn.Dropout(0.2)
+        self.context_weighter = nn.Parameter(torch.tensor(1.0))
+        self.cross_attn = nn.MultiheadAttention(embed_dim=self.hidden_size, num_heads=8, batch_first=True)
+        self.norm = nn.LayerNorm(self.hidden_size)
+
 
         # Learnable poly codes
         self.poly_codes = nn.Embedding(poly_m, self.hidden_size)
@@ -30,13 +34,10 @@ class PolyEncoder(nn.Module):
         # Regression head for scoring
         # self.reg_head = nn.Linear(self.hidden_size, 1)
         self.reg_head = nn.Sequential(
-            nn.Linear(self.hidden_size * 2, 1028),
+            nn.Linear(self.hidden_size * 3, 1028),
             nn.ReLU(),
             nn.Dropout(0.1),
-            nn.Linear(1028, 256),
-            nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(256, 1)
+            nn.Linear(1028, 1)
         )
 
 
@@ -84,16 +85,28 @@ class PolyEncoder(nn.Module):
         candidate_vec = F.normalize(candidate_vec, dim=-1)
 
         # Candidate attends to poly codes
-        attn_scores = torch.matmul(candidate_vec.unsqueeze(1), context_vecs.transpose(1, 2)).squeeze(1)  # [B, M]
-        attn_weights = torch.softmax(attn_scores, dim=-1)  # [B, M]
-        context_pooled = torch.bmm(attn_weights.unsqueeze(1), context_vecs).squeeze(1)  # [B, H]
+        # attn_scores = torch.matmul(candidate_vec.unsqueeze(1), context_vecs.transpose(1, 2)).squeeze(1)  # [B, M]
+        # attn_weights = torch.softmax(attn_scores, dim=-1)  # [B, M]
+        # context_pooled = torch.bmm(attn_weights.unsqueeze(1), context_vecs).squeeze(1)  # [B, H]
 
+        # expand candidate to have a "sequence length" of 1
+        query = candidate_vec.unsqueeze(1)
+        key = value = context_vecs
+
+        # multi-head cross-attention
+        attended, _ = self.cross_attn(query, key, value)
+        context_pooled = self.norm(attended.squeeze(1))
 
         # Option 1: combine candidate and pooled context with dot product
         # score = torch.sum(context_pooled * candidate_vec, dim=-1, keepdim=True)  # [B, 1]
 
         # Option 2: regression head (maps to scalar if desired)
-        combined = torch.cat((context_pooled, candidate_vec), dim=1)
+        combined = torch.cat((
+            context_pooled * self.context_weighter,
+            candidate_vec,
+            (context_pooled * self.context_weighter) * candidate_vec,
+        ), dim=1)
+
         score = self.reg_head(combined)
 
         return score.squeeze(-1)
@@ -102,13 +115,14 @@ class PolyEncoder(nn.Module):
         return self.model_name
 
 class CreativityScorer(pl.LightningModule):
-    def __init__(self, model_name, poly_m=256, lr=3e-5):
+    def __init__(self, model_name, poly_m=256, lr=1e-5):
         super().__init__()
         self.model_name = model_name
         self.model = PolyEncoder(model_name, poly_m)
         self.lr = lr
         self.val_pearson_ema = None
         self.ema_alpha = 0.5
+        self.context_weighter = nn.Parameter(torch.tensor(1.0))
 
 
         # Validation train metric tracking
@@ -170,4 +184,3 @@ class CreativityScorer(pl.LightningModule):
             ], "lr": self.lr / 5},
         ])
         return optimizer
-

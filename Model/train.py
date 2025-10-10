@@ -52,6 +52,13 @@ def main():
 
     wandb_logger = WandbLogger(project="fixed-testing", name="deberta large ebs 8 no dl")
 
+    checkpoint_callback = ModelCheckpoint(
+        monitor="val_pearson",
+        mode="max",
+        save_top_k=1,
+        filename="best-{epoch:02d}-{val_pearson:.4f}"
+    )
+
 
     trainer = pl.Trainer(
         max_epochs=epochs,
@@ -62,20 +69,26 @@ def main():
         log_every_n_steps=10,
         accumulate_grad_batches=4,
         strategy=DDPStrategy(find_unused_parameters=True),
-        gradient_clip_val=1,
-        val_check_interval=0.2
+        gradient_clip_val=0.8,
+        val_check_interval=0.2,
+        callbacks=[checkpoint_callback]
+
     )
     trainer.fit(model, train_loader, val_loader)
 
+    best_model_path = checkpoint_callback.best_model_path
+
+    best_model = CreativityScorer.load_from_checkpoint(best_model_path, tokenizer=tokenizer)
+
     testPath = "/home/sam/datasets/TestData.csv"
 
-    correlation = computeCorrelation(model, testPath, batch, tokenizer, 128)
+    correlation = computeCorrelation(best_model, testPath, batch, tokenizer, 128)
 
     wandb_logger.log_metrics({"correlation": correlation})
 
     heldOutPath = "/home/sam/datasets/HeldOutTest.csv"
 
-    finalCorrelation = computeCorrelation(model, heldOutPath, batch, tokenizer, 128, ho=True)
+    finalCorrelation = computeCorrelation(best_model, heldOutPath, batch, tokenizer, 128, ho=True)
 
     wandb_logger.log_metrics({"HeldOut correlation": finalCorrelation})
 

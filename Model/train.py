@@ -71,7 +71,7 @@ def main():
     trainer.fit(model, train_loader, val_loader)
 
 
-    best_model = CreativityScorer.load_from_checkpoint(model, tokenizer=tokenizer)
+    best_model = model
 
     testPath = "/home/sam/datasets/TestData.csv"
 

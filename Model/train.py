@@ -31,14 +31,11 @@ def main():
     epochs = 10
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "microsoft/deberta-xlarge"
+    tokenizer = "microsoft/deberta-v3-large"
 
 
 
     dataset = CreativityRankingDataset("/home/sam/datasets/TrainData.csv", tokenizer)
-    # labels = np.array([dataset[i]['label'] for i in range(len(dataset))])
-    # bins = np.linspace(labels.min(), labels.max(), 11)  # 10 bins
-    # label_bins = np.digitize(labels, bins)
     train_size = int(0.875 * len(dataset))
     val_size = len(dataset) - train_size
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
@@ -65,7 +62,7 @@ def main():
         log_every_n_steps=10,
         accumulate_grad_batches=4,
         strategy=DDPStrategy(find_unused_parameters=True),
-        gradient_clip_val=0.8,
+        gradient_clip_val=1,
         val_check_interval=0.2
     )
     trainer.fit(model, train_loader, val_loader)

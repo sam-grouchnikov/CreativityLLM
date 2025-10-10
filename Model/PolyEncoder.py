@@ -123,7 +123,7 @@ class CreativityScorer(pl.LightningModule):
         self.val_pearson_ema = None
         self.ema_alpha = 0.5
         self.context_weighter = nn.Parameter(torch.tensor(1.0))
-        self.logger = logger
+        self.wandb_logger = logger
 
 
         # Validation train metric tracking
@@ -171,7 +171,7 @@ class CreativityScorer(pl.LightningModule):
         self.log("val_pearson_ema", self.val_pearson_ema, prog_bar=True)
         correlation = computeCorrelation(self, "/home/sam/datasets/TestData.csv", 16, "microsoft/deberta-xlarge", 128)
 
-        self.logger.log_metrics({"correlation": correlation})
+        self.wandb_logger.log_metrics({"correlation": correlation})
 
         self.val_preds = []
         self.val_labels = []

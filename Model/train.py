@@ -41,8 +41,9 @@ def main():
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
     train_loader = DataLoader(train_dataset, batch_size=batch, shuffle=True, num_workers=15)
     val_loader = DataLoader(val_dataset, batch_size=batch, shuffle=False, num_workers=15)
+    wandb_logger = WandbLogger(project="fixed-testing", name="deberta large ebs 8 no dl")
 
-    model = CreativityScorer(tokenizer)
+    model = CreativityScorer(tokenizer, wandb_logger)
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
@@ -50,7 +51,6 @@ def main():
         for param in layer.parameters():
             param.requires_grad = True
 
-    wandb_logger = WandbLogger(project="fixed-testing", name="deberta large ebs 8 no dl")
 
 
 
@@ -64,7 +64,7 @@ def main():
         log_every_n_steps=10,
         accumulate_grad_batches=4,
         strategy=DDPStrategy(find_unused_parameters=True),
-        gradient_clip_val=0.8,
+        gradient_clip_val=0.6,
         val_check_interval=0.2,
 
     )

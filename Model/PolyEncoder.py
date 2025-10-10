@@ -115,7 +115,7 @@ class PolyEncoder(nn.Module):
         return self.model_name
 
 class CreativityScorer(pl.LightningModule):
-    def __init__(self, model_name, poly_m=256, lr=1e-5):
+    def __init__(self, model_name, logger, poly_m=256, lr=1e-5):
         super().__init__()
         self.model_name = model_name
         self.model = PolyEncoder(model_name, poly_m)
@@ -123,6 +123,7 @@ class CreativityScorer(pl.LightningModule):
         self.val_pearson_ema = None
         self.ema_alpha = 0.5
         self.context_weighter = nn.Parameter(torch.tensor(1.0))
+        self.logger = logger
 
 
         # Validation train metric tracking
@@ -168,7 +169,9 @@ class CreativityScorer(pl.LightningModule):
             )
         self.log("val_pearson", pearson_corr, prog_bar=True)
         self.log("val_pearson_ema", self.val_pearson_ema, prog_bar=True)
+        correlation = computeCorrelation(self, "/home/sam/datasets/TestData.csv", 16, "microsoft/deberta-xlarge", 128)
 
+        self.logger.log_metrics({"correlation": correlation})
 
         self.val_preds = []
         self.val_labels = []

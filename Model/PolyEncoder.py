@@ -22,7 +22,8 @@ class PolyEncoder(nn.Module):
         self.encoder = AutoModel.from_pretrained(model_name)
         self.hidden_size = self.encoder.config.hidden_size
         self.poly_m = poly_m
-        self.dropout = nn.Dropout(0.1)
+        self.dropout = nn.Dropout(0.2)
+        self.context_weighter = nn.Parameter(torch.tensor(1.0))
         self.cross_attn = nn.MultiheadAttention(embed_dim=self.hidden_size, num_heads=8, batch_first=True)
         self.norm = nn.LayerNorm(self.hidden_size)
 
@@ -101,7 +102,7 @@ class PolyEncoder(nn.Module):
 
         # Option 2: regression head (maps to scalar if desired)
         combined = torch.cat((
-            (context_pooled) * candidate_vec,
+            (context_pooled * self.context_weighter) * candidate_vec,
             candidate_vec,
         ), dim=1)
 
@@ -113,13 +114,14 @@ class PolyEncoder(nn.Module):
         return self.model_name
 
 class CreativityScorer(pl.LightningModule):
-    def __init__(self, model_name, poly_m=256, lr=5e-4):
+    def __init__(self, model_name, poly_m=256, lr=1e-5):
         super().__init__()
         self.model_name = model_name
         self.model = PolyEncoder(model_name, poly_m)
         self.lr = lr
         self.val_pearson_ema = None
         self.ema_alpha = 0.5
+        self.context_weighter = nn.Parameter(torch.tensor(1.0))
 
 
         # Validation train metric tracking
@@ -178,7 +180,7 @@ class CreativityScorer(pl.LightningModule):
                 *self.model.reg_head.parameters(),
                 *self.model.cross_attn.parameters(),
                 *self.model.norm.parameters()
-            ], "lr": self.lr},
+            ], "lr": self.lr / 5},
         ])
         return optimizer
 

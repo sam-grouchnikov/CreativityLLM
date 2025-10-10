@@ -52,12 +52,7 @@ def main():
 
     wandb_logger = WandbLogger(project="fixed-testing", name="deberta large ebs 8 no dl")
 
-    checkpoint_callback = ModelCheckpoint(
-        monitor="val_pearson",
-        mode="max",
-        save_top_k=1,
-        filename="best-{epoch:02d}-{val_pearson:.4f}"
-    )
+
 
 
     trainer = pl.Trainer(
@@ -71,12 +66,10 @@ def main():
         strategy=DDPStrategy(find_unused_parameters=True),
         gradient_clip_val=0.8,
         val_check_interval=0.2,
-        callbacks=[checkpoint_callback]
 
     )
     trainer.fit(model, train_loader, val_loader)
 
-    best_model_path = checkpoint_callback.best_model_path
 
     best_model = CreativityScorer.load_from_checkpoint(best_model_path, tokenizer=tokenizer)
 

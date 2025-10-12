@@ -23,7 +23,6 @@ class PolyEncoder(nn.Module):
         self.hidden_size = self.encoder.config.hidden_size
         self.poly_m = poly_m
         self.dropout = nn.Dropout(0.2)
-        self.context_weighter = nn.Parameter(torch.tensor(1.0))
         self.cross_attn = nn.MultiheadAttention(embed_dim=self.hidden_size, num_heads=8, batch_first=True)
         self.norm = nn.LayerNorm(self.hidden_size)
 
@@ -45,6 +44,19 @@ class PolyEncoder(nn.Module):
         # Poly code indices
         self.register_buffer("poly_code_ids", torch.arange(poly_m))
 
+
+
+    def encode_candidate(self, input_ids, attention_mask, token_type_ids=None):
+
+        # Encodes candidate into a single vector
+        outputs = self.encoder(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            token_type_ids=token_type_ids
+        )
+        cls_vec = outputs.last_hidden_state[:, 0, :]  # [B, H]
+        return cls_vec
+
     def encode_context(self, input_ids, attention_mask, token_type_ids=None):
 
         # Encodes context into M poly-code embeddings
@@ -65,17 +77,6 @@ class PolyEncoder(nn.Module):
         attended = torch.bmm(attn_weights, token_embeds)  # [B, M, H]
         attended = self.dropout(attended)
         return attended  # [B, M, H]
-
-    def encode_candidate(self, input_ids, attention_mask, token_type_ids=None):
-
-        # Encodes candidate into a single vector
-        outputs = self.encoder(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            token_type_ids=token_type_ids
-        )
-        cls_vec = outputs.last_hidden_state[:, 0, :]  # [B, H]
-        return cls_vec
 
     def forward(self, context_inputs, candidate_inputs):
         # Encode context and candidate
@@ -122,7 +123,6 @@ class CreativityScorer(pl.LightningModule):
         self.lr = lr
         self.val_pearson_ema = None
         self.ema_alpha = 0.5
-        self.context_weighter = nn.Parameter(torch.tensor(1.0))
         self.wandb_logger = logger
 
 

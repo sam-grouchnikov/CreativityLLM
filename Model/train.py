@@ -49,7 +49,7 @@ def main():
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
-    for layer in model.model.encoder.encoder.layer[-18:]:
+    for layer in model.model.encoder.encoder.layer[-32:]:
         for param in layer.parameters():
             param.requires_grad = True
 

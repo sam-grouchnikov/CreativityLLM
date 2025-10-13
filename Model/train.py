@@ -27,20 +27,22 @@ import numpy as np
 
 def main():
 
-    batch = 4
+    batch = 2
     epochs = 10
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "bert-large-uncased"
+    tokenizer = "microsoft/deberta-xlarge"
 
 
 
-    dataset = CreativityRankingDataset("/home/sam/datasets/TrainData.csv", tokenizer)
-    train_size = int(0.875 * len(dataset))
-    val_size = len(dataset) - train_size
-    train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
-    train_loader = DataLoader(train_dataset, batch_size=batch, shuffle=True, num_workers=15)
-    val_loader = DataLoader(val_dataset, batch_size=batch, shuffle=False, num_workers=15)
+    trainDataset = CreativityRankingDataset("/home/sam/datasets/train.csv", tokenizer)
+    valDataset = CreativityRankingDataset("/home/sam/datasets/val.csv", tokenizer)
+
+    # train_size = int(0.875 * len(dataset))
+    # val_size = len(dataset) - train_size
+    # train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+    train_loader = DataLoader(trainDataset, batch_size=batch, shuffle=True, num_workers=15)
+    val_loader = DataLoader(valDataset, batch_size=batch, shuffle=False, num_workers=15)
     wandb_logger = WandbLogger(project="fixed-testing", name="bert large")
 
     model = CreativityScorer(tokenizer, wandb_logger)
@@ -73,7 +75,7 @@ def main():
 
     best_model = model
 
-    testPath = "/home/sam/datasets/TestData.csv"
+    testPath = "/home/sam/datasets/test.csv"
 
     correlation = computeCorrelation(best_model, testPath, batch, tokenizer, 128)
 

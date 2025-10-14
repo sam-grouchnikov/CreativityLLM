@@ -169,7 +169,7 @@ class CreativityScorer(pl.LightningModule):
             )
         self.log("val_pearson", pearson_corr, prog_bar=True)
         self.log("val_pearson_ema", self.val_pearson_ema, prog_bar=True)
-        correlation = computeCorrelation(self, "/home/sam/datasets/test.csv", 16, "microsoft/deberta-v3-large", 128)
+        correlation = computeCorrelation(self, "/home/sam/datasets/test.csv", 16, "microsoft/deberta-v3-base", 128)
 
         self.wandb_logger.log_metrics({"correlation": correlation})
 

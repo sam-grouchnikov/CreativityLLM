@@ -43,7 +43,7 @@ def main():
     # train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
     train_loader = DataLoader(trainDataset, batch_size=batch, shuffle=True, num_workers=15)
     val_loader = DataLoader(valDataset, batch_size=batch, shuffle=False, num_workers=15)
-    wandb_logger = WandbLogger(project="fixed-testing", name="db xl new train")
+    wandb_logger = WandbLogger(project="bert-comps", name="db-xl")
 
     model = CreativityScorer(tokenizer, wandb_logger)
     for param in model.model.encoder.parameters():

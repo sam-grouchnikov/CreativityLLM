@@ -31,7 +31,7 @@ def main():
     epochs = 4
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "bert-base-uncased"
+    tokenizer = "bert-large-uncased"
 
 
 
@@ -49,7 +49,7 @@ def main():
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
-    for layer in model.model.encoder.encoder.layer[-12:]:
+    for layer in model.model.encoder.encoder.layer[-24:]:
         for param in layer.parameters():
             param.requires_grad = True
 

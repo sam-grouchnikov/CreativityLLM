@@ -31,7 +31,7 @@ def main():
     epochs = 4
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "microsoft/deberta-v3-xlarge"
+    tokenizer = "microsoft/deberta-v2-xlarge"
 
 
 

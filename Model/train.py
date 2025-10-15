@@ -1,28 +1,11 @@
-import torch
 from lightning.pytorch.loggers import WandbLogger
 from lightning.pytorch.strategies import DDPStrategy
-from torch.utils.data import Dataset, DataLoader
-from transformers import AutoTokenizer
-import pandas as pd
-import torch
-import torch.nn as nn
-from transformers import AutoModel
 import lightning as pl
 from torch.utils.data import DataLoader, random_split
-from sklearn.model_selection import train_test_split
-from torch.utils.data import Subset
-from lightning.pytorch.callbacks import ModelCheckpoint
-from scipy.stats import pearsonr
-
-
-
 import torch
-import torch.nn.functional as F
-
 from Model.PolyEncoder import CreativityScorer
 from Model.Dataset import CreativityRankingDataset
 from test import computeCorrelation
-import numpy as np
 
 
 def main():
@@ -31,9 +14,7 @@ def main():
     epochs = 4
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "roberta-base"
-
-
+    tokenizer = "roberta-large"
 
     trainDataset = CreativityRankingDataset("/home/sam/datasets/train.csv", tokenizer)
     valDataset = CreativityRankingDataset("/home/sam/datasets/val.csv", tokenizer)
@@ -43,19 +24,20 @@ def main():
     # train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
     train_loader = DataLoader(trainDataset, batch_size=batch, shuffle=True, num_workers=15)
     val_loader = DataLoader(valDataset, batch_size=batch, shuffle=False, num_workers=15)
-    wandb_logger = WandbLogger(project="bert-comps", name="rb-b")
+    wandb_logger = WandbLogger(project="bert-comps", name="rb-l")
 
     model = CreativityScorer(tokenizer, wandb_logger)
+
+    # freeze all encoder layers (including embedding)
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
-    for layer in model.model.encoder.encoder.layer[-12:]:
+
+    # layers unfrozen
+
+    for layer in model.model.encoder.encoder.layer[-24:]:
         for param in layer.parameters():
             param.requires_grad = True
-
-
-
-
 
     trainer = pl.Trainer(
         max_epochs=epochs,
@@ -72,7 +54,6 @@ def main():
     )
     trainer.fit(model, train_loader, val_loader)
 
-
     best_model = model
 
     testPath = "/home/sam/datasets/test.csv"
@@ -86,8 +67,6 @@ def main():
     finalCorrelation = computeCorrelation(best_model, heldOutPath, batch, tokenizer, 128, ho=True)
 
     wandb_logger.log_metrics({"HeldOut correlation": finalCorrelation})
-
-
 
 if __name__ == "__main__":
     main()

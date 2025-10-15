@@ -1,16 +1,7 @@
-import torch
-from lightning.pytorch.loggers import WandbLogger
-from lightning.pytorch.strategies import DDPStrategy
 from torch.utils.data import Dataset, DataLoader
 from transformers import AutoTokenizer, DebertaV2Tokenizer
 import pandas as pd
 import torch
-import torch.nn as nn
-from transformers import AutoModel
-import lightning as pl
-import torch
-import torch.nn.functional as F
-from scipy.stats import pearsonr
 
 class CreativityRankingDataset(Dataset):
     def __init__(self, csv_file, tokenizer_name, max_length=128):

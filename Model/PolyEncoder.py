@@ -1,10 +1,3 @@
-import torch
-from lightning.pytorch.loggers import WandbLogger
-from lightning.pytorch.strategies import DDPStrategy
-from torch.utils.data import Dataset, DataLoader
-from transformers import AutoTokenizer
-import pandas as pd
-import torch
 import torch.nn as nn
 from transformers import AutoModel
 import lightning as pl
@@ -31,7 +24,6 @@ class PolyEncoder(nn.Module):
         self.poly_codes = nn.Embedding(poly_m, self.hidden_size)
 
         # Regression head for scoring
-        # self.reg_head = nn.Linear(self.hidden_size, 1)
         self.reg_head = nn.Sequential(
             nn.Linear(self.hidden_size * 3, 1028),
             nn.ReLU(),
@@ -39,16 +31,13 @@ class PolyEncoder(nn.Module):
             nn.Linear(1028, 1)
         )
 
-
-
-        # Poly code indices
+        # Poly code indices for lookup
         self.register_buffer("poly_code_ids", torch.arange(poly_m))
 
 
 
     def encode_candidate(self, input_ids, attention_mask, token_type_ids=None):
-
-        # Encodes candidate into a single vector
+        # Candidate encoder
         outputs = self.encoder(
             input_ids=input_ids,
             attention_mask=attention_mask,
@@ -58,25 +47,24 @@ class PolyEncoder(nn.Module):
         return cls_vec
 
     def encode_context(self, input_ids, attention_mask, token_type_ids=None):
-
-        # Encodes context into M poly-code embeddings
+        # Context encoder
         outputs = self.encoder(
             input_ids=input_ids,
             attention_mask=attention_mask,
             token_type_ids=token_type_ids
         )
-        token_embeds = outputs.last_hidden_state  # [B, L, H]
+        token_embeds = outputs.last_hidden_state
 
         # Poly codes
         poly_codes = self.poly_codes(self.poly_code_ids)  # [M, H]
         poly_codes = poly_codes.unsqueeze(0).expand(token_embeds.size(0), -1, -1)  # [B, M, H]
 
         # Attention: poly codes attend to tokens
-        attn_scores = torch.matmul(poly_codes, token_embeds.transpose(1, 2))  # [B, M, L]
-        attn_weights = torch.softmax(attn_scores, dim=-1)  # [B, M, L]
-        attended = torch.bmm(attn_weights, token_embeds)  # [B, M, H]
+        attn_scores = torch.matmul(poly_codes, token_embeds.transpose(1, 2))
+        attn_weights = torch.softmax(attn_scores, dim=-1)
+        attended = torch.bmm(attn_weights, token_embeds)
         attended = self.dropout(attended)
-        return attended  # [B, M, H]
+        return attended
 
     def forward(self, context_inputs, candidate_inputs):
         # Encode context and candidate
@@ -85,12 +73,12 @@ class PolyEncoder(nn.Module):
         context_vecs = F.normalize(context_vecs, dim=-1)
         candidate_vec = F.normalize(candidate_vec, dim=-1)
 
-        # Candidate attends to poly codes
+        # Candidate attends to poly codes (single head attn variant)
         # attn_scores = torch.matmul(candidate_vec.unsqueeze(1), context_vecs.transpose(1, 2)).squeeze(1)  # [B, M]
         # attn_weights = torch.softmax(attn_scores, dim=-1)  # [B, M]
         # context_pooled = torch.bmm(attn_weights.unsqueeze(1), context_vecs).squeeze(1)  # [B, H]
 
-        # expand candidate to have a "sequence length" of 1
+        # Q, K, V
         query = candidate_vec.unsqueeze(1)
         key = value = context_vecs
 
@@ -125,8 +113,6 @@ class CreativityScorer(pl.LightningModule):
         self.ema_alpha = 0.5
         self.wandb_logger = logger
 
-
-        # Validation train metric tracking
         self.val_preds = []
         self.val_labels = []
 
@@ -154,8 +140,6 @@ class CreativityScorer(pl.LightningModule):
         return loss
 
     def on_validation_epoch_end(self):
-        # Logging correlations after each epoch
-
         preds = torch.cat(self.val_preds).numpy()
         labels = torch.cat(self.val_labels).numpy()
 
@@ -169,7 +153,7 @@ class CreativityScorer(pl.LightningModule):
             )
         self.log("val_pearson", pearson_corr, prog_bar=True)
         self.log("val_pearson_ema", self.val_pearson_ema, prog_bar=True)
-        correlation = computeCorrelation(self, "/home/sam/datasets/test.csv", 16, "roberta-base", 128)
+        correlation = computeCorrelation(self, "/home/sam/datasets/test.csv", 16, "roberta-large", 128)
 
         self.wandb_logger.log_metrics({"correlation": correlation})
 

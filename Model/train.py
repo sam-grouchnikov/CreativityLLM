@@ -31,7 +31,7 @@ def main():
     epochs = 4
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "microsoft/deberta-v2-xlarge"
+    tokenizer = "roberta-base"
 
 
 
@@ -43,13 +43,13 @@ def main():
     # train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
     train_loader = DataLoader(trainDataset, batch_size=batch, shuffle=True, num_workers=15)
     val_loader = DataLoader(valDataset, batch_size=batch, shuffle=False, num_workers=15)
-    wandb_logger = WandbLogger(project="bert-comps", name="db-b")
+    wandb_logger = WandbLogger(project="bert-comps", name="rb-b")
 
     model = CreativityScorer(tokenizer, wandb_logger)
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
-    for layer in model.model.encoder.encoder.layer[-24:]:
+    for layer in model.model.encoder.encoder.layer[-12:]:
         for param in layer.parameters():
             param.requires_grad = True
 
@@ -66,7 +66,7 @@ def main():
         log_every_n_steps=10,
         accumulate_grad_batches=4,
         strategy=DDPStrategy(find_unused_parameters=True),
-        gradient_clip_val=0.6,
+        gradient_clip_val=0.8,
         val_check_interval=0.20,
 
     )

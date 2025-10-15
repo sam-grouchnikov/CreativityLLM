@@ -116,7 +116,7 @@ class PolyEncoder(nn.Module):
         return self.model_name
 
 class CreativityScorer(pl.LightningModule):
-    def __init__(self, model_name, logger, poly_m=512, lr=1e-5):
+    def __init__(self, model_name, logger, poly_m=512, lr=5e-6):
         super().__init__()
         self.model_name = model_name
         self.model = PolyEncoder(model_name, poly_m)

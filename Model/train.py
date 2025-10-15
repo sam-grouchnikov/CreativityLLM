@@ -49,7 +49,7 @@ def main():
     for param in model.model.encoder.parameters():
         param.requires_grad = False
 
-    for layer in model.model.encoder.encoder.layer[-23:]:
+    for layer in model.model.encoder.encoder.layer[-24:]:
         for param in layer.parameters():
             param.requires_grad = True
 
@@ -66,7 +66,7 @@ def main():
         log_every_n_steps=10,
         accumulate_grad_batches=4,
         strategy=DDPStrategy(find_unused_parameters=True),
-        gradient_clip_val=0.8,
+        gradient_clip_val=0.6,
         val_check_interval=0.20,
 
     )

@@ -15,7 +15,7 @@ def main():
     epochs = 4
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "bert-base-uncased"
+    tokenizer = "microsoft/deberta-v3-large"
 
     trainDataset = CreativityRankingDataset("/home/sam/datasets/train.csv", tokenizer)
     valDataset = CreativityRankingDataset("/home/sam/datasets/val.csv", tokenizer)
@@ -25,14 +25,14 @@ def main():
     # train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
     train_loader = DataLoader(trainDataset, batch_size=batch, shuffle=True, num_workers=15)
     val_loader = DataLoader(valDataset, batch_size=batch, shuffle=False, num_workers=15)
-    wandb_logger = WandbLogger(project="fixed-testing", name="rb-l")
+    wandb_logger = WandbLogger(project="time-testing", name="db-l")
 
     checkpoint_callback = ModelCheckpoint(
         monitor='val_pearson',
         mode='max',
         save_top_k=1,
         dirpath='/home/sam/checkpoints/',
-        filename='best-model'
+        filename='best-model-db-l'
     )
 
     model = CreativityScorer(tokenizer, wandb_logger)

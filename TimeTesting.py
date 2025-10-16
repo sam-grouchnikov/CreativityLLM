@@ -11,9 +11,9 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 
 def main():
 
-    tokenizer = "bert-base-uncased"
+    tokenizer = "microsoft/deberta-v3-large"
 
-    best_model = CreativityScorer.load_from_checkpoint("/home/sam/checkpoints/best-model.ckpt", model_name=tokenizer, logger=None)
+    best_model = CreativityScorer.load_from_checkpoint("/home/sam/checkpoints/best-model-db-l.ckpt", model_name=tokenizer, logger=None)
 
     testPath = "/home/sam/datasets/test.csv"
 

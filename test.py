@@ -11,6 +11,7 @@ import pandas as pd
 from scipy.special import expit
 import matplotlib.pyplot as plt
 import warnings
+import time
 
 class CorrelationDataset(Dataset):
     def __init__(self, csv_file, tokenizer, max_length=128):
@@ -76,6 +77,8 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
     model.eval()
 
     preds, targets, questions = [], [], []
+    total_examples = len(dataset)
+    total_inference_time = 0.0
 
     with torch.no_grad():
         for batch in dataloader:
@@ -83,7 +86,11 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
             r_input = {k: v.to(device, non_blocking=True) for k, v in batch["response_input"].items()}
             score_true = batch["score"].to(device, non_blocking=True)
 
+            start_time = time.perf_counter()
             score_pred = model.model(q_input, r_input)
+            end_time = time.perf_counter()
+            total_inference_time += (end_time - start_time)
+
 
             preds.append(score_pred.cpu())
             targets.append(score_true.cpu())
@@ -105,6 +112,8 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
 
 
     print(f"Pearson correlation: {pearson_corr:.4f}")
+    avg_time_per_example = total_inference_time / total_examples
+    print(f"Avg time for each example: {avg_time_per_example:.4f}")
 
 
 

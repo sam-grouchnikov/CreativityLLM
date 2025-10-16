@@ -13,7 +13,7 @@ def main():
 
     tokenizer = "bert-base-uncased"
 
-    best_model = CreativityScorer.load_from_checkpoint("/home/sam/checkpoints/best_model.ckpt")
+    best_model = CreativityScorer.load_from_checkpoint("/home/sam/checkpoints/best-model.ckpt")
 
     testPath = "/home/sam/datasets/test.csv"
 

@@ -31,7 +31,7 @@ def main():
         monitor='val_pearson',
         mode='max',
         save_top_k=1,
-        dirpath='home/sam/checkpoints/',
+        dirpath='/home/sam/checkpoints/',
         filename='best-model'
     )
 

@@ -6,6 +6,7 @@ import torch
 from Model.PolyEncoder import CreativityScorer
 from Model.Dataset import CreativityRankingDataset
 from test import computeCorrelation
+from lightning.pytorch.callbacks import ModelCheckpoint
 
 
 def main():
@@ -14,7 +15,7 @@ def main():
     epochs = 4
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "roberta-large"
+    tokenizer = "bert-base-uncased"
 
     trainDataset = CreativityRankingDataset("/home/sam/datasets/train.csv", tokenizer)
     valDataset = CreativityRankingDataset("/home/sam/datasets/val.csv", tokenizer)
@@ -25,6 +26,14 @@ def main():
     train_loader = DataLoader(trainDataset, batch_size=batch, shuffle=True, num_workers=15)
     val_loader = DataLoader(valDataset, batch_size=batch, shuffle=False, num_workers=15)
     wandb_logger = WandbLogger(project="bert-comps", name="rb-l")
+
+    checkpoint_callback = ModelCheckpoint(
+        monitor='val_pearson',
+        mode='max',
+        save_top_k=1,
+        dirpath='home/sam/checkpoints/',
+        filename='best-model'
+    )
 
     model = CreativityScorer(tokenizer, wandb_logger)
 
@@ -50,7 +59,7 @@ def main():
         strategy=DDPStrategy(find_unused_parameters=True),
         gradient_clip_val=0.8,
         val_check_interval=0.20,
-
+        callbacks=[checkpoint_callback]
     )
     trainer.fit(model, train_loader, val_loader)
 

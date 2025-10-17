@@ -25,15 +25,15 @@ def main():
     # train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
     train_loader = DataLoader(trainDataset, batch_size=batch, shuffle=True, num_workers=15)
     val_loader = DataLoader(valDataset, batch_size=batch, shuffle=False, num_workers=15)
-    wandb_logger = WandbLogger(project="time-testing", name="db-l")
+    wandb_logger = WandbLogger(project="poly-m-comps", name="db-l-256")
 
-    checkpoint_callback = ModelCheckpoint(
-        monitor='val_pearson',
-        mode='max',
-        save_top_k=1,
-        dirpath='/home/sam/checkpoints/',
-        filename='best-model-db-l'
-    )
+    # checkpoint_callback = ModelCheckpoint(
+    #     monitor='val_pearson',
+    #     mode='max',
+    #     save_top_k=1,
+    #     dirpath='/home/sam/checkpoints/',
+    #     filename='best-model-db-l'
+    # )
 
     model = CreativityScorer(tokenizer, wandb_logger)
 
@@ -59,7 +59,7 @@ def main():
         strategy=DDPStrategy(find_unused_parameters=True),
         gradient_clip_val=0.8,
         val_check_interval=0.20,
-        callbacks=[checkpoint_callback]
+        # callbacks=[checkpoint_callback]
     )
     trainer.fit(model, train_loader, val_loader)
 

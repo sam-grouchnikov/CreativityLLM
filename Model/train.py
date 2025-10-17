@@ -12,7 +12,7 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 def main():
 
     batch = 2
-    epochs = 4
+    epochs = 8
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
     tokenizer = "microsoft/deberta-v3-large"

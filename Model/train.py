@@ -25,7 +25,7 @@ def main():
     # train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
     train_loader = DataLoader(trainDataset, batch_size=batch, shuffle=True, num_workers=15)
     val_loader = DataLoader(valDataset, batch_size=batch, shuffle=False, num_workers=15)
-    wandb_logger = WandbLogger(project="poly-m-comps", name="db-l-256")
+    wandb_logger = WandbLogger(project="poly-m-comps", name="db-l-64")
 
     # checkpoint_callback = ModelCheckpoint(
     #     monitor='val_pearson',

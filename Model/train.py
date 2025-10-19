@@ -15,7 +15,7 @@ def main():
     epochs = 8
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "microsoft/deberta-v3-large"
+    tokenizer = "roberta-base"
 
     trainDataset = CreativityRankingDataset("/home/sam/datasets/train.csv", tokenizer)
     valDataset = CreativityRankingDataset("/home/sam/datasets/val.csv", tokenizer)
@@ -25,7 +25,7 @@ def main():
     # train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
     train_loader = DataLoader(trainDataset, batch_size=batch, shuffle=True, num_workers=15)
     val_loader = DataLoader(valDataset, batch_size=batch, shuffle=False, num_workers=15)
-    wandb_logger = WandbLogger(project="poly-m-comps", name="db-l-64")
+    wandb_logger = WandbLogger(project="poly-m-comps", name="rb-b-64")
 
     # checkpoint_callback = ModelCheckpoint(
     #     monitor='val_pearson',

@@ -12,7 +12,7 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 def main():
 
     batch = 2
-    epochs = 8
+    epochs = 3
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
     tokenizer = "roberta-base"
@@ -71,11 +71,7 @@ def main():
 
     wandb_logger.log_metrics({"correlation": correlation})
 
-    heldOutPath = "/home/sam/datasets/HeldOutTest.csv"
-
-    finalCorrelation = computeCorrelation(best_model, heldOutPath, batch, tokenizer, 128, ho=True)
-
-    wandb_logger.log_metrics({"HeldOut correlation": finalCorrelation})
+    trainer.save_checkpoint("best_model.ckpt")
 
 if __name__ == "__main__":
     main()

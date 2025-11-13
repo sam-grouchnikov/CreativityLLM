@@ -13,9 +13,13 @@ def main():
 
     tokenizer = "microsoft/deberta-v3-large"
 
-    best_model = CreativityScorer.load_from_checkpoint("/home/sam/checkpoints/best-model-db-l.ckpt", model_name=tokenizer, logger=None)
+    print("Starting load")
 
-    testPath = "/home/sam/datasets/test.csv"
+    best_model = CreativityScorer.load_from_checkpoint("C:\\Users\\samgr\\PycharmProjects\\CreativityLLM\\best_model.ckpt", model_name=tokenizer, logger=None)
+
+    print("Loaded")
+
+    testPath = "C:\\Users\\samgr\\PycharmProjects\\CreativityLLM\\TrainingData\\TestData.csv"
 
     correlation = computeCorrelation(best_model, testPath, 64, tokenizer, 128)
 

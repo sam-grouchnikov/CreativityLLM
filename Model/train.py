@@ -15,7 +15,7 @@ def main():
     epochs = 3
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "roberta-base"
+    tokenizer = "microsoft/deberta-v3-large"
 
     trainDataset = CreativityRankingDataset("/home/sam/datasets/train.csv", tokenizer)
     valDataset = CreativityRankingDataset("/home/sam/datasets/val.csv", tokenizer)

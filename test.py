@@ -62,7 +62,11 @@ class CorrelationDataset(Dataset):
 def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=128, ho=False):
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True)
 
+    print("Started loading dataset")
+
     dataset = CorrelationDataset(csv_path, tokenizer, max_length=max_length)
+
+    print("Finished loading dataset")
     dataloader = DataLoader(
         dataset,
         batch_size=batch_size,
@@ -79,6 +83,7 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
     preds, targets, questions = [], [], []
     total_examples = len(dataset)
     total_inference_time = 0.0
+    iteration = 0
 
     with torch.no_grad():
         for batch in dataloader:
@@ -95,6 +100,9 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
             preds.append(score_pred.cpu())
             targets.append(score_true.cpu())
             questions.extend(batch["question_text"])
+            iteration += 1
+            if (iteration % 1) == 0:
+                print(iteration, " out of ", len(dataloader))
 
     preds = torch.cat(preds).numpy()
     targets = torch.cat(targets).numpy()

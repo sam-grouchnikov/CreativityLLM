@@ -161,13 +161,28 @@ class CreativityScorer(pl.LightningModule):
         self.val_labels = []
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW([
-            {"params": self.model.encoder.parameters(), "lr": self.lr},
-            {"params": [
-                *self.model.poly_codes.parameters(),
-                *self.model.reg_head.parameters(),
-                *self.model.cross_attn.parameters(),
-                *self.model.norm.parameters()
-            ], "lr": self.lr / 5},
-        ])
+        no_decay = ["bias", "LayerNorm.weight"]
+        optimizer_grouped_parameters = [
+            {
+                "params": [p for n, p in self.model.encoder.named_parameters() if not any(nd in n for nd in no_decay)],
+                "weight_decay": 0.01,
+                "lr": self.lr,
+            },
+            {
+                "params": [p for n, p in self.model.encoder.named_parameters() if any(nd in n for nd in no_decay)],
+                "weight_decay": 0.0,
+                "lr": self.lr,
+            },
+            {
+                "params": [
+                    *self.model.poly_codes.parameters(),
+                    *self.model.reg_head.parameters(),
+                    *self.model.cross_attn.parameters(),
+                    *self.model.norm.parameters()
+                ],
+                "weight_decay": 0.01,
+                "lr": self.lr / 5,
+            },
+        ]
+        optimizer = torch.optim.AdamW(optimizer_grouped_parameters)
         return optimizer

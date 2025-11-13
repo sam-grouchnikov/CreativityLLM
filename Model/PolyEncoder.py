@@ -25,10 +25,10 @@ class PolyEncoder(nn.Module):
 
         # Regression head for scoring
         self.reg_head = nn.Sequential(
-            nn.Linear(self.hidden_size * 3, 512),
-            nn.ReLU(),
-            nn.Dropout(0.4),
-            nn.Linear(512, 1)
+            nn.Linear(self.hidden_size * 3, 1),
+            # nn.ReLU(),
+            # nn.Dropout(0.4),
+            # nn.Linear(512, 1)
         )
 
         # Poly code indices for lookup
@@ -44,7 +44,6 @@ class PolyEncoder(nn.Module):
             token_type_ids=token_type_ids
         )
         cls_vec = outputs.last_hidden_state[:, 0, :]  # [B, H]
-        cls_vec = self.dropout(cls_vec)
         return cls_vec
 
     def encode_context(self, input_ids, attention_mask, token_type_ids=None):
@@ -63,9 +62,7 @@ class PolyEncoder(nn.Module):
         # Attention: poly codes attend to tokens
         attn_scores = torch.matmul(poly_codes, token_embeds.transpose(1, 2))
         attn_weights = torch.softmax(attn_scores, dim=-1)
-        attn_weights = F.dropout(attn_weights, p=0.4)
         attended = torch.bmm(attn_weights, token_embeds)
-        attended = self.dropout(attended)
         return attended
 
     def forward(self, context_inputs, candidate_inputs):

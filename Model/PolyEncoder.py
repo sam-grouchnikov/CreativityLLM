@@ -63,7 +63,7 @@ class PolyEncoder(nn.Module):
         # Attention: poly codes attend to tokens
         attn_scores = torch.matmul(poly_codes, token_embeds.transpose(1, 2))
         attn_weights = torch.softmax(attn_scores, dim=-1)
-        attn_weights = F.dropout(0.4)
+        attn_weights = F.dropout(attn_weights, p=0.4)
         attended = torch.bmm(attn_weights, token_embeds)
         attended = self.dropout(attended)
         return attended

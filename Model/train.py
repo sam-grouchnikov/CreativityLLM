@@ -44,7 +44,7 @@ def main():
 
     # layers unfrozen
 
-    for layer in model.model.encoder.encoder.layer[-12:]:
+    for layer in model.model.encoder.encoder.layer[-24:]:
         for param in layer.parameters():
             param.requires_grad = True
 

@@ -101,8 +101,8 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
             targets.append(score_true.cpu())
             questions.extend(batch["question_text"])
             iteration += 1
-            if (iteration % 1) == 0:
-                print(iteration, " out of ", len(dataloader))
+            # if (iteration % 1) == 0:
+            #     print(iteration, " out of ", len(dataloader))
 
     preds = torch.cat(preds).numpy()
     targets = torch.cat(targets).numpy()

@@ -60,7 +60,10 @@ class CorrelationDataset(Dataset):
 
 
 def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=128, ho=False):
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True, ignore_mismatched_sizes=True,
+    trust_remote_code=True,
+    revision="main",
+    from_tf=False)
 
     print("Started loading dataset")
 
@@ -71,7 +74,7 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
         dataset,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=4,
+        num_workers=0,
         pin_memory=torch.cuda.is_available(),
     )
     warnings.filterwarnings("ignore", message="The current process just got forked")
@@ -101,8 +104,10 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
             targets.append(score_true.cpu())
             questions.extend(batch["question_text"])
             iteration += 1
-            # if (iteration % 1) == 0:
-            #     print(iteration, " out of ", len(dataloader))
+            if (iteration % 1) == 0:
+                print(iteration, " out of ", len(dataloader))
+
+    print("Its done")
 
     preds = torch.cat(preds).numpy()
     targets = torch.cat(targets).numpy()
@@ -142,4 +147,4 @@ def computeCorrelation(model, csv_path, batch_size, tokenizer_name, max_length=1
         df.to_csv("pred_vs_actual_perprompt_ho.csv", index=False)
         plt.savefig("pred_vs_actual_perprompt_ho.png", dpi=150, bbox_inches="tight")
 
-    return pearson_corr
+    return avg_time_per_example

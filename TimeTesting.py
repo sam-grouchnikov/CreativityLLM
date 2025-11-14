@@ -10,20 +10,27 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 
 
 def main():
-
     tokenizer = "microsoft/deberta-v3-large"
 
     print("Starting load")
 
-    best_model = CreativityScorer.load_from_checkpoint("C:\\Users\\samgr\\PycharmProjects\\CreativityLLM\\best_model.ckpt", model_name=tokenizer, logger=None)
+    ckpt_path = r"C:\Users\samgr\PycharmProjects\CreativityLLM\best_model.ckpt"
 
-    print("Loaded")
+    print("Loading raw checkpoint state_dict...")
+    ckpt = torch.load(ckpt_path, map_location="cpu")   # <-- SAFE ON PY 3.15
 
-    testPath = "C:\\Users\\samgr\\PycharmProjects\\CreativityLLM\\TrainingData\\TestData.csv"
+    print("Constructing model...")
+    best_model = CreativityScorer(model_name=tokenizer, logger=None)
+
+    print("Loading state_dict...")
+    best_model.load_state_dict(ckpt["state_dict"], strict=False)
+
+    print("Loaded model successfully.")
+
+    testPath = r"C:\Users\samgr\PycharmProjects\CreativityLLM\TrainingData\TestData.csv"
 
     correlation = computeCorrelation(best_model, testPath, 64, tokenizer, 128)
-
-
+    print("Correlation:", correlation)
 
 
 

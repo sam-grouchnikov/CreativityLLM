@@ -15,7 +15,7 @@ class PolyEncoder(nn.Module):
         self.encoder = AutoModel.from_pretrained(model_name)
         self.hidden_size = self.encoder.config.hidden_size
         self.poly_m = poly_m
-        self.dropout = nn.Dropout(0.4)
+        self.dropout = nn.Dropout(0.2)
         self.cross_attn = nn.MultiheadAttention(embed_dim=self.hidden_size, num_heads=8, batch_first=True)
         self.norm = nn.LayerNorm(self.hidden_size)
 
@@ -25,10 +25,10 @@ class PolyEncoder(nn.Module):
 
         # Regression head for scoring
         self.reg_head = nn.Sequential(
-            nn.Linear(self.hidden_size * 3, 1),
-            # nn.ReLU(),
-            # nn.Dropout(0.4),
-            # nn.Linear(512, 1)
+            nn.Linear(self.hidden_size * 3, 1028),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(1028, 1)
         )
 
         # Poly code indices for lookup

@@ -15,7 +15,7 @@ def main():
     epochs = 3
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "microsoft/deberta-v3-large"
+    tokenizer = "roberta-base"
 
     trainDataset = CreativityRankingDataset("/home/sam/datasets/train.csv", tokenizer)
     valDataset = CreativityRankingDataset("/home/sam/datasets/val.csv", tokenizer)
@@ -71,7 +71,7 @@ def main():
 
     wandb_logger.log_metrics({"correlation": correlation})
 
-    trainer.save_checkpoint("best_model.ckpt")
+    trainer.save_checkpoint("roberta.ckpt")
 
 if __name__ == "__main__":
     main()

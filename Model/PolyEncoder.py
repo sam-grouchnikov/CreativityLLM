@@ -15,7 +15,7 @@ class PolyEncoder(nn.Module):
         self.encoder = AutoModel.from_pretrained(model_name)
         self.hidden_size = self.encoder.config.hidden_size
         self.poly_m = poly_m
-        self.dropout = nn.Dropout(0.2)
+        self.dropout = nn.Dropout(0.1)
         self.cross_attn = nn.MultiheadAttention(embed_dim=self.hidden_size, num_heads=8, batch_first=True)
         self.norm = nn.LayerNorm(self.hidden_size)
 

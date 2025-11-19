@@ -15,7 +15,7 @@ def main():
     epochs = 3
     devices = torch.cuda.device_count()
     pl.seed_everything(42)
-    tokenizer = "roberta-base"
+    tokenizer = "glaiveai/eelbert-tiny"
 
     trainDataset = CreativityRankingDataset("/home/sam/datasets/train.csv", tokenizer)
     valDataset = CreativityRankingDataset("/home/sam/datasets/val.csv", tokenizer)
@@ -38,15 +38,15 @@ def main():
     model = CreativityScorer(tokenizer, wandb_logger)
 
     # freeze all encoder layers (including embedding)
-    for param in model.model.encoder.parameters():
-        param.requires_grad = False
-
-
-    # layers unfrozen
-
-    for layer in model.model.encoder.encoder.layer[-24:]:
-        for param in layer.parameters():
-            param.requires_grad = True
+    # for param in model.model.encoder.parameters():
+    #     param.requires_grad = False
+    #
+    #
+    # # layers unfrozen
+    #
+    # for layer in model.model.encoder.encoder.layer[-24:]:
+    #     for param in layer.parameters():
+    #         param.requires_grad = True
 
     trainer = pl.Trainer(
         max_epochs=epochs,

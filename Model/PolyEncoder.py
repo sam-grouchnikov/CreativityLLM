@@ -25,13 +25,13 @@ class PolyEncoder(nn.Module):
 
         # Regression head for scoring
         self.reg_head = nn.Sequential(
-            nn.Linear(self.hidden_size * 3, 1028),
+            nn.Linear(self.hidden_size * 3, 4000),
             nn.ReLU(),
-            nn.Linear(1028, 1028),
+            nn.Linear(4000, 4000),
             nn.ReLU(),
-            nn.Linear(1028, 1028),
+            nn.Linear(4000, 2056),
             nn.ReLU(),
-            nn.Linear(1028, 1),
+            nn.Linear(2056, 1),
         )
 
         # Poly code indices for lookup

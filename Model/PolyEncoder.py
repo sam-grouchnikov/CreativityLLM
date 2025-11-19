@@ -27,8 +27,11 @@ class PolyEncoder(nn.Module):
         self.reg_head = nn.Sequential(
             nn.Linear(self.hidden_size * 3, 1028),
             nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.Linear(1028, 1)
+            nn.Linear(1028, 1028),
+            nn.ReLU(),
+            nn.Linear(1028, 1028),
+            nn.ReLU(),
+            nn.Linear(1028, 1),
         )
 
         # Poly code indices for lookup

@@ -14,7 +14,7 @@ def main():
     batch = 2
     epochs = 3
     devices = torch.cuda.device_count()
-    pl.seed_everything(42)
+    pl.seed_everything(2)
     tokenizer = "zereraz/eelbert"
 
     trainDataset = CreativityRankingDataset("/home/sam/datasets/train.csv", tokenizer)
